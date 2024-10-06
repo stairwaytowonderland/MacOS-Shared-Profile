@@ -1,0 +1,24 @@
+# Exclude
+.DS_Store
+
+*.heic
+*.jpg
+
+*.zip
+
+*.terminal
+
+/bin
+/confidential
+/Tools
+/Data
+/Backup
+**/assets
+
+/.*
+**/.git-*
+
+# Include
+!.gitignore
+!.profile
+!.editforconfig
