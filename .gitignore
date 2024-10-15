@@ -13,6 +13,8 @@
 /Tools
 /Data
 /Backup
+/logitune
+/Relocated*
 **/assets
 
 /.*
