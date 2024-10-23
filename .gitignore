@@ -8,8 +8,9 @@
 
 *.terminal
 
+/private
 /bin
-/confidential
+/Config
 /Tools
 /Data
 /Backup
