@@ -1,0 +1,65 @@
+################################################################################
+
+### Ensure Signing and Signature Compatibility
+## Git version >= 2.34
+# git --version
+## OpenSSH >= 8.8
+# ssh -V
+
+### TL;DR
+# git config --global user.name "Full Name"
+# git config --global user.email "email@example.com"
+# git config --global gpg.format ssh
+# git config --global user.signingkey ~/PATH/TO/.SSH/KEY.PUB
+# git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+# git config --global commit.gpgsign true
+# git config --global tag.gpgsign true
+
+### Generate ~/.ssh/allowed_signers
+# echo "$(git config --get user.email) namespaces=\"git\" $(cat /PATH/TO/.SSH/KEY.PUB)" >> ~/.ssh/allowed_signers
+
+### Verify
+# git log --show-signature
+# git show --show-signature
+
+################################################################################
+
+[user]
+	## git config --global user.name "Full Name"
+	name = Full Name
+	## git config --global user.email "email@example.com"
+	email = email@example.com
+	## git config --global user.username "your_user-name"
+	# username = your_user-name
+
+### Functionality
+[core]
+	editor = /Users/Shared/lib/git-editor.sh
+[diff]
+	tool = "bbdiff"
+[difftool]
+	prompt = false
+[difftool "bbdiff"]
+	cmd = /usr/local/bin/bbdiff --wait --resume "$LOCAL" "$REMOTE"
+
+### Security
+[user]
+	## git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
+	signingkey = /Users/andrewhaller/.ssh/github/stairwaytowonderland/id_ed25519_andrewhaller.pub
+[gpg]
+	## git config --global gpg.format ssh
+	format = ssh
+[commit]
+	### Automatically sign commits
+	## git config --global commit.gpgsign true
+	gpgsign = true
+[tag]
+	### Automatically sign tags
+	# git config --global tag.gpgsign true
+	gpgsign = true
+[gpg "ssh"]
+	## git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+	allowedSignersFile = /Users/andrewhaller/.ssh/allowed_signers
+
+################################################################################
+
