@@ -2,9 +2,9 @@ export UMASK_OVERRIDE=0002
 # Space separated e.g. '/path/one /path/two /path/three ...'
 export UMASK_OVERRIDE_DIRS=/Users/Shared
 
-export EDITOR=~/bin/bbwait
 export VISUAL=~/bin/bbwait
-export GIT_EDITOR=~/bin/bbwait
+export EDITOR="$VISUAL"
+export GIT_EDITOR="$VISUAL"
 
 # Enable colors in bash
 export CLICOLOR=1
