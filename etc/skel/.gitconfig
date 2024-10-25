@@ -14,6 +14,7 @@
 # git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
 # git config --global commit.gpgsign true
 # git config --global tag.gpgsign true
+# git config --global pull.rebase true
 
 ### Generate ~/.ssh/allowed_signers
 # echo "$(git config --get user.email) namespaces=\"git\" $(cat /PATH/TO/.SSH/KEY.PUB)" >> ~/.ssh/allowed_signers
