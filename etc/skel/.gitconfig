@@ -32,7 +32,7 @@
 	## git config --global user.username "your_user-name"
 	# username = your_user-name
 
-### Functionality
+### Core Functionality
 [core]
 	editor = /Users/Shared/bin/bbwait
 [diff]
@@ -60,6 +60,11 @@
 [gpg "ssh"]
 	## git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
 	allowedSignersFile = /Users/username/.ssh/allowed_signers
+
+### Misc Functionality
+[pull]
+	## git config --global pull.rebase true
+	rebase = true
 
 ################################################################################
 
