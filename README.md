@@ -1,6 +1,6 @@
 # MacOS-Shared-Profile
 
-## Clone into existing folder
+## Clone into existing folder (e.g. /Users/Shared)
 
 ```bash
 git init
