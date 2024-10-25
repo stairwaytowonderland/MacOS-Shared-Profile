@@ -4,7 +4,7 @@
 
 ```bash
 git init
-git remote add origin git@github.com:andrewhaller/MacOS-Shared-Profile.git
+git remote add origin git@github.com:stairwaytowonderland/MacOS-Shared-Profile.git
 git fetch
 git pull origin main
 ```
