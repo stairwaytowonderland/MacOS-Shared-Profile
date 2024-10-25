@@ -1,12 +1,11 @@
 # Ensure no double load
 ! ${BASHRC_LOADED:-false} && return
 
-shopt login_shell >/dev/null || cd ~
+shopt login_shell >/dev/null && cal || cd ~
 
-cal
-
+# Load only .sh files from target dir
 for f in $(find /Users/Shared/etc/profile.d -mindepth 1 -maxdepth 1 -type f ! -name '.DS_Store' | sort); do
-    . "$f"
+  . "$f"
 done
 
 eval "$(/opt/homebrew/bin/brew shellenv)"

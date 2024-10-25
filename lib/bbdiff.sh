@@ -1,15 +1,15 @@
 #!/bin/sh
 
-# /usr/local/bin/bbedit --wait --resume
+# /usr/local/bin/bbdiff --wait --resume "$LOCAL" "$REMOTE"
 
-__bbedit() {
-    cmd="$(command -v bbedit)"
+__bbdiff() {
+    cmd="$(command -v bbdiff)"
     [ -x "$cmd" ] && "$cmd" "$@" || return $?
 }
 
 if command -v launchctl >/dev/null && launchctl managername | grep "[A]qua" >/dev/null; then
   # GUI Enabled
-  __bbedit --wait --resume "$@" || nano "$@"
+  __bbdiff --wait --resume "$@" || diff "$@"
 else
-  nano "$@"
+  diff "$@"
 fi

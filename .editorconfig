@@ -46,7 +46,7 @@ indent_size = 4
 indent_size = 2
 
 # Bash Files
-[*.sh]
+[{**.sh,**.env,.bash*,etc/**/.bash*,etc/profile}]
 end_of_line = lf
 indent_size = 2
 
