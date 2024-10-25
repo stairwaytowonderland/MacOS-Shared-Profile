@@ -6,5 +6,4 @@
 # |  |  |  |  |
 # *  *  *  *  *  command to be executed
 # *  *  *  *  *  command --arg1 --arg2 file1 file2 2>&1
-
-0 * * * * BREWFILE="/Users/Shared/setup/$(whoami).Brewfile" && [ ! -r $BREWFILE ] || cp "$BREWFILE" "$BREWFILE.$(date +\%u.\%H).bak" && brew bundle dump --file=$BREWFILE --force >/dev/null 2>&1
+#

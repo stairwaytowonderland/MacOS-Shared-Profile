@@ -6,8 +6,4 @@
 # |  |  |  |  |
 # *  *  *  *  *  command to be executed
 # *  *  *  *  *  command --arg1 --arg2 file1 file2 2>&1
-
-# Only removed .DS_Store from /Volumes folder.
-0 * * * * find /Volumes -name '.DS_Store' -type f -delete >/dev/null 2>&1
-# Follow symlinks and recursiveloy remove all occurrences. Not recommended since folder view attributes will be lost.
-# 0 * * * * find -L /Volumes -name '.DS_Store' -type f -delete >/dev/null 2>&1
+#
