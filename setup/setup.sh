@@ -32,6 +32,6 @@ done
 printf "\033[1mUpdating crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/{.header,*.cron})
 cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
 printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
-cat ${BASE_DIR}/cron/root/{.header,*.cron} | sudo crontab -
+cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
 
 printf "\033[1m%s\033[0m:\n\n\t%s\n\n... \033[1m%s\033[0m\n" "Remember to generate your ssh keys" "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent" "and update your ~/.gitconfig"
