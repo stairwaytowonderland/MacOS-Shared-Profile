@@ -72,24 +72,40 @@ __copy_file() {
   fi
 }
 
-main() {
-  __create_dir ${BASE_DIR}/Data
+__create_dirs_and_links() {
+  __create_dir "${BASE_DIR}/Data"
   __create_symlink "${BASE_DIR}/lib/bbwait.sh" "${BASE_DIR}/bin/bbwait"
   __create_symlink "${BASE_DIR}/lib/bbdiff.sh" "${BASE_DIR}/bin/bbdiff"
   __create_symlink "${BASE_DIR}/bin" "$(dirname $XDG_DATA_HOME)/bin"
   __create_symlink "${BASE_DIR}/etc/profile.d" "$(dirname $XDG_DATA_HOME)/profile.d"
   __create_symlink "${BASE_DIR}/.editorconfig" "$HOME/.editorconfig"
+}
 
+__copy_skel() {
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' -exec echo {} \;); do
     __copy_file $f "$HOME/"
   done
+}
 
+__install_crons() {
   printf "\033[1mUpdating crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/{.header,*.cron})
   cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
   printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
   cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
+}
 
-  printf "\033[1m%s\033[0m:\n\n\t%s\n\n... \033[1m%s\033[0m\n" "Remember to generate your ssh keys" "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent" "and update your ~/.gitconfig"
+__gitconfig_nag() {
+  printf "\033[1m%s\033[0m:\n\n\t%s\n\n... \033[1m%s\033[0m\n" \
+    "Remember to generate your ssh keys" \
+    "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent" \
+    "and update your ~/.gitconfig"
+}
+
+main() {
+  __create_dirs_and_links
+  __copy_skel
+  __install_crons
+  __gitconfig_nag
 }
 
 main "$@"
