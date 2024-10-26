@@ -1,17 +1,26 @@
 # Record the default umask value on the 1st run
-[ -z "$DEFAULT_UMASK" ] && export DEFAULT_UMASK="$(builtin umask)"
+[ -z "${UMASK_DEFAULT:-""}" ] && export UMASK_DEFAULT="$(builtin umask)"
+export UMASK_OVERRIDE="${UMASK_OVERRIDE:-""}"
+
+__umask_default() {
+  export UMASK=$UMASK_DEFAULT
+}
+
+__umask_override() {
+  printf "\033[0;2m%s\033[0m: \033[91;2m%s\033[0m=>\033[92;2m%s\033[0m\n" "Overriding default umask" "$UMASK_DEFAULT" "$UMASK_OVERRIDE"
+  export UMASK=$UMASK_OVERRIDE
+}
 
 _umask_hook() {
-  if [ -n "$UMASK_OVERRIDE" -a "$UMASK_OVERRIDE" != "$DEFAULT_UMASK" ]; then
+  if [ -n "$UMASK_OVERRIDE" -a "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" ]; then
     for d in $UMASK_OVERRIDE_DIRS; do
-      if [ "$PWD" = "$d" ]; then
-        umask "$UMASK_OVERRIDE"
-        printf "\033[0;2m%s\033[0m: \033[91;2m%s\033[0m=>\033[92;2m%s\033[0m\n" "Overriding default umask" "$DEFAULT_UMASK" "$UMASK_OVERRIDE"
-      fi
+      case $PWD/ in
+        $d/*) __umask_override;;
+        *) __umask_default;;
+      esac
     done
-  else
-    umask "$DEFAULT_UMASK"
   fi
+  umask "$UMASK"
 }
 
 # Append `;` if PROMPT_COMMAND is not empty

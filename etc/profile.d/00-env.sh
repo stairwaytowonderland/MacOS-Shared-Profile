@@ -1,8 +1,8 @@
-export UMASK_OVERRIDE=0002
+UMASK_OVERRIDE=0002
 # Space separated e.g. '/path/one /path/two /path/three ...'
-export UMASK_OVERRIDE_DIRS=/Users/Shared
+UMASK_OVERRIDE_DIRS=/Users/Shared
 
-export VISUAL=~/bin/bbwait
+export VISUAL=~/.local/bin/bbwait
 export EDITOR="$VISUAL"
 export GIT_EDITOR="$VISUAL"
 
@@ -14,6 +14,11 @@ export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
 
 # Hides the default login message
 export BASH_SILENCE_DEPRECATION_WARNING=1
+
+# https://specifications.freedesktop.org/basedir-spec/latest/
+export XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
+
+[ ! -d "$(dirname $XDG_DATA_HOME)/bin)" ] || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
 
 # Load ~/.env if it exists
 [ ! -r ~/.env ] || . ~/.env
