@@ -24,5 +24,4 @@
 !.gitignore
 
 !/config/**/*.jpg
-!/config/**/*.terminal
 !/config/**/*.zip
