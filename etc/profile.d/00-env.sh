@@ -18,7 +18,5 @@ export BASH_SILENCE_DEPRECATION_WARNING=1
 # https://specifications.freedesktop.org/basedir-spec/latest/
 export XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
 
-[ ! -d "$(dirname $XDG_DATA_HOME)/bin)" ] || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
-
 # Load ~/.env if it exists
 [ ! -r ~/.env ] || . ~/.env

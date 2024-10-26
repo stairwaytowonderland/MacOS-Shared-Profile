@@ -16,3 +16,5 @@ export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
 
 # Display aliases
 printf "\033[0;2m%s\033[0m\n" "$(alias)"
+
+[ ! -r "$(dirname $XDG_DATA_HOME)/bin" ] || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
