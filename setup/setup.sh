@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -eu
 
 if [ -f "$0" ]; then
   SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
