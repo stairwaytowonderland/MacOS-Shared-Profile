@@ -35,13 +35,13 @@
 
 ### Core Functionality
 [core]
-	editor = ~/.local/bin/bbwait
+	editor = ~/.local/bin/bbeditor
 [diff]
 	tool = "bbdiff"
 [difftool]
 	prompt = false
 [difftool "bbdiff"]
-	cmd = ~/.local/bin/bbdiff "$LOCAL" "$REMOTE"
+	cmd = ~/.local/bin/bbdiffer "$LOCAL" "$REMOTE"
 
 ### Security
 [user]

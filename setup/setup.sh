@@ -14,6 +14,12 @@ UMASK_RESTORE="$(builtin umask)"
 
 errcho() { >&2 echo $@; }
 
+strip_last() {
+  local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
+  [ "$delimeter" = "." ] || pattern="(.*)${delimeter}(.*)$"
+  [ -n "$str" ] && echo "$str" | sed -E "s/${pattern}/\1/"
+}
+
 __set_umask() { umask "${UMASK_DEFAULT:-$UMASK_RESTORE}"; }
 __restore_umask() { umask "${UMASK_RESTORE}"; }
 
@@ -72,19 +78,29 @@ __copy_file() {
   fi
 }
 
+__bin_files() {
+  local source_dir="$1" target_dir="${2:-$1}" f=""
+  [ -d "$source_dir" ] || return
+  for f in $(ls -1 "$source_dir"); do
+    __create_symlink "${source_dir}/${f}" "${target_dir}/$(strip_last $f)"
+  done
+  unset f
+}
+
 __create_dirs_and_links() {
   __create_dir "${BASE_DIR}/Data"
-  __create_symlink "${BASE_DIR}/lib/bbwait.sh" "${BASE_DIR}/bin/bbwait"
-  __create_symlink "${BASE_DIR}/lib/bbdiff.sh" "${BASE_DIR}/bin/bbdiff"
+  __bin_files "${BASE_DIR}/lib" "${BASE_DIR}/bin"
   __create_symlink "${BASE_DIR}/bin" "$(dirname $XDG_DATA_HOME)/bin"
   __create_symlink "${BASE_DIR}/etc/profile.d" "$(dirname $XDG_DATA_HOME)/profile.d"
   __create_symlink "${BASE_DIR}/.editorconfig" "$HOME/.editorconfig"
 }
 
 __copy_skel() {
+  local f=""
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' -exec echo {} \;); do
-    __copy_file $f "$HOME/"
+    __copy_file "$f" "$HOME/"
   done
+  unset f
 }
 
 __install_crons() {

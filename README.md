@@ -11,5 +11,5 @@ git pull origin main
 ## Run setup
 
 ```bash
-setup/setup.sh
+make install
 ```
