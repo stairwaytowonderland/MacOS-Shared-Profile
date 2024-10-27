@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# set -eu
+set -eu
 
 bbdiffer() { [ -x "$(command -v bbdiff)" ] && bbdiff --resume --wait -- "$@" || return $?; }
 

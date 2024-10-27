@@ -16,6 +16,11 @@ XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
 
 errcho() { >&2 echo $@; }
 
+info() {
+  local str="$1"
+  printf "\033[94;1m%s\033[0m \033[0m%s\033[0m\n" "[INFO]" "$str"
+}
+
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
   [ "$delimeter" = "." ] || pattern="(.*)${delimeter}(.*)$"
@@ -39,11 +44,13 @@ __confirm() {
 __create_dir() {
   local dir="$1" group=staff
   if [ ! -r "$dir" ]; then
-    printf "\033[1mCreating dir '%s'\033[0m\n" "$dir"
-    mkdir -p "$dir"
-    if __confirm "Reset group of '$dir' to '$group' (requires sudo)?" ; then
-      printf "\033[1mResetting group of '%s' to '%s'\033[0m\n" "$dir" "$group"
-      sudo chown ":${group}" "$dir"
+    if __confirm "Directory '$dir' doesn't exist. Create it?" "y" ; then
+      info "Creating dir '$dir'"
+      mkdir -p "$dir"
+      if __confirm "Reset group of '$dir' to '$group' (requires sudo)?" ; then
+        info "Resetting group of '$dir' to '$group'"
+        sudo chown ":${group}" "$dir"
+      fi
     fi
   fi
 }
@@ -63,7 +70,7 @@ __create_symlink() {
   __ensure_parent_dir "$target"
   if [ ! -r "$target" ]; then
     __set_umask
-    printf "\033[1mCreating symlink '%s' => '%s'\033[0m\n" "$source" "$target"
+    info "Creating symlink '$source' => '$target'"
     [ -r "$target" ] || ln -s "$source" "$target"
     __restore_umask
   fi
@@ -74,7 +81,7 @@ __copy_file() {
   __ensure_parent_dir "$target"
   if [ ! -r "$target" ]; then
     __set_umask
-    printf "\033[1mCopying '%s' to '%s'\033[0m\n" "$source" "$target"
+    info "Copying '$source' to '$target'"
     cp "$source" "$target"
     __restore_umask
   fi
@@ -107,7 +114,7 @@ __copy_skel() {
 
 __install_crons() {
   if __confirm "Install user crons?" "y" ; then
-    printf "\033[1mUpdating crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/{.header,*.cron})
+    info "Updating crontab with: $(ls ${BASE_DIR}/cron/{.header,*.cron})"
     cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
   fi
   if __confirm "Install root crons (requires sudo)?" ; then
