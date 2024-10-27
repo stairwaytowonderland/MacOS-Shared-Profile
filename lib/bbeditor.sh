@@ -2,8 +2,6 @@
 
 set -eu
 
-# /usr/local/bin/bbedit --wait --resume
-
 bbwait() {
   [ -x "$(command -v bbedit)" ] && [ "root" != "$(whoami)" ] && \
     bbedit --language 'Unix Shell Script' \
@@ -15,10 +13,15 @@ bbwait() {
 }
 
 main() {
+  local err=0
   if command -v launchctl >/dev/null && launchctl managername | grep "[A]qua" >/dev/null; then
     # GUI Enabled
-    # /usr/local/bin/bbedit --wait $*
-    bbwait "$@" || nano -- "$@"
+    bbwait "$@" || err=$?
+    if [ $err -gt 0 ]; then
+      case $err in
+        *) nano -- "$@";;
+      esac
+    fi
   else
     nano -- "$@"
   fi

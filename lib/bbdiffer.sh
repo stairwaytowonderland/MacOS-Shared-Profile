@@ -1,16 +1,20 @@
 #!/bin/sh
 
-set -eu
-
-# /usr/local/bin/bbdiff --wait --resume "$LOCAL" "$REMOTE"
+# set -eu
 
 bbdiffer() { [ -x "$(command -v bbdiff)" ] && bbdiff --resume --wait -- "$@" || return $?; }
 
 main() {
+  local err=0
   if command -v launchctl >/dev/null && launchctl managername | grep "[A]qua" >/dev/null; then
     # GUI Enabled
-    # TODO: Why does bbdiff always exits with exit code '1'?
-    bbdiffer "$@" || printf "For some reason '%s' always exits code 1.\n" "bbdiff"
+    bbdiffer "$@" || err=$?
+    if [ $err -gt 0 ]; then
+      case $err in
+        1) printf "For some reason '%s' always exits code 1.\n" "bbdiff";;
+        *) diff -- "$@";;
+      esac
+    fi
   else
     diff -- "$@"
   fi
