@@ -9,8 +9,10 @@ else
 fi
 
 BASE_DIR="$(dirname $SCRIPT_DIR)"
-XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
 UMASK_RESTORE="$(builtin umask)"
+
+# https://specifications.freedesktop.org/basedir-spec/latest/
+XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
 
 errcho() { >&2 echo $@; }
 
