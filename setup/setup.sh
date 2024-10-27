@@ -27,11 +27,11 @@ __restore_umask() { umask "${UMASK_RESTORE}"; }
 
 __confirm() {
   [ -n "${1:-""}" ] || return
-  local msg="$1" input="" default="n" yn=""
-  expr $input : '[yY]' >/dev/null 2>&1 && yn="[Y/n]" || yn="[y/N]"
+  local msg="$1" default="${2:-n}" yn="[y/N]" input=""
+  expr $default : '[yY]' >/dev/null 2>&1 && yn="[Y/n]" || yn="[y/N]"
   read -r -p $'\033[32;1m'"? "$'\033[0m'$'\033[1m'"$msg"$'\033[0m'" $yn " input
   [ -n "$input" ] || input="$default"
-  expr $input : '[ynYN]' >/dev/null 2>&1 || __confirm "$msg"
+  expr $input : '[ynYN]' >/dev/null 2>&1 || __confirm "$msg" "$default"
   errcho $input
   expr $input : '[yY]' >/dev/null 2>&1 || return $?
 }
@@ -106,10 +106,14 @@ __copy_skel() {
 }
 
 __install_crons() {
-  printf "\033[1mUpdating crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/{.header,*.cron})
-  cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
-  printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
-  cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
+  if __confirm "Install user crons?" "y" ; then
+    printf "\033[1mUpdating crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/{.header,*.cron})
+    cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
+  fi
+  if __confirm "Install root crons (requires sudo)?" ; then
+    printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
+    cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
+  fi
 }
 
 __gitconfig_nag() {
