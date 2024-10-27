@@ -83,8 +83,8 @@ __copy_file() {
 __bin_files() {
   local source_dir="$1" target_dir="${2:-$1}" f=""
   [ -d "$source_dir" ] || return
-  for f in $(ls -1 "$source_dir"); do
-    __create_symlink "${source_dir}/${f}" "${target_dir}/$(strip_last $f)"
+  for f in $(find "$source_dir" -name '*.sh' -exec echo {} \;); do
+    __create_symlink "$f" "${target_dir}/$(basename $(strip_last $f))"
   done
   unset f
 }

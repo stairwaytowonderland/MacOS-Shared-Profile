@@ -1,1 +1,2 @@
-0 * * * * PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH" BREWFILE="/Users/Shared/setup/brew/$(whoami).Brewfile" && [ ! -r $BREWFILE ] || cp "$BREWFILE" "$BREWFILE.$(date +\%u.\%H).bak" && brew bundle dump --file="$BREWFILE" --force >/dev/null 2>&1
+# Daily
+0 0 * * * PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH" BREWFILE="/Users/Shared/setup/brew/$(whoami).Brewfile" && [ ! -r $BREWFILE ] || cp "$BREWFILE" "$BREWFILE.$(date +\%u.\%H).bak" && brew bundle dump --file="$BREWFILE" --force >/dev/null 2>&1

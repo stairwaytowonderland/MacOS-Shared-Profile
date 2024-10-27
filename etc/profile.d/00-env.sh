@@ -2,7 +2,7 @@ UMASK_OVERRIDE=0002
 # Space separated e.g. '/path/one /path/two /path/three ...'
 UMASK_OVERRIDE_DIRS=/Users/Shared
 
-export VISUAL=~/.local/bin/bbeditor
+export VISUAL="$HOME/.local/bin/bbeditor"
 export EDITOR="$VISUAL"
 export GIT_EDITOR="$VISUAL"
 
