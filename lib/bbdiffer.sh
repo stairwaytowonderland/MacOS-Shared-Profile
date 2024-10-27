@@ -10,7 +10,7 @@ main() {
   if command -v launchctl >/dev/null && launchctl managername | grep "[A]qua" >/dev/null; then
     # GUI Enabled
     # TODO: Why does bbdiff always exits with exit code '1'?
-    ! bbdiffer "$@"
+    bbdiffer "$@" || printf "For some reason '%s' always exits code 1.\n" "bbdiff"
   else
     diff -- "$@"
   fi
