@@ -27,6 +27,12 @@ strip_last() {
   [ -n "$str" ] && echo "$str" | sed -E "s/${pattern}/\1/"
 }
 
+install_brewfile() {
+  local brewfile="$BASE_DIR/setup/brew/$(whoami).Brewfile"
+  local target="${1:-$brewfile}"
+  brew bundle --file="$target"
+}
+
 __set_umask() { umask "${UMASK_DEFAULT:-$UMASK_RESTORE}"; }
 __restore_umask() { umask "${UMASK_RESTORE}"; }
 
@@ -87,7 +93,7 @@ __copy_file() {
   fi
 }
 
-__bin_files() {
+__create_bin() {
   local source_dir="$1" target_dir="${2:-$1}" f=""
   [ -d "$source_dir" ] || return
   for f in $(find "$source_dir" -name '*.sh' -exec echo {} \;); do
@@ -98,16 +104,30 @@ __bin_files() {
 
 __create_dirs_and_links() {
   __create_dir "${BASE_DIR}/Data"
-  __bin_files "${BASE_DIR}/lib" "${BASE_DIR}/bin"
+  __create_bin "${BASE_DIR}/lib" "${BASE_DIR}/bin"
   __create_symlink "${BASE_DIR}/bin" "$(dirname $XDG_DATA_HOME)/bin"
   __create_symlink "${BASE_DIR}/etc/profile.d" "$(dirname $XDG_DATA_HOME)/profile.d"
   __create_symlink "${BASE_DIR}/.editorconfig" "$HOME/.editorconfig"
+  __create_symlink "${BASE_DIR}/setup/brew/$(whoami).Brewfile" "$HOME/Brewfile"
+}
+
+__brewfile() {
+  local brewfile="$1"
+  if [ -r "$brewfile" ]; then
+    ! __confirm "Install dependencies from Homebrew?" "n" || install_brewfile "$brewfile"
+  fi
+}
+
+__configure_dependencies() {
+  local brewfile="${HOME}/Brewfile"
+  __create_dirs_and_links
+  __brewfile "$brewfile"
 }
 
 __copy_skel() {
-  local f=""
+  local target="${1:-"$HOME"}" mode="${2:-""}" f=""
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' -exec echo {} \;); do
-    __copy_file "$f" "$HOME/"
+    $mode __copy_file "$f" "$target/"
   done
   unset f
 }
@@ -123,6 +143,19 @@ __install_crons() {
   fi
 }
 
+__configure_root() {
+  if __confirm "Configure 'root' user (requires sudo)?" "n" ; then
+    ! __confirm "Configure 'root' shell ($(command -v bash))?" "y" || sudo chsh -s "$(command -v bash)"
+    ! __confirm "Configure 'root' profile?" "y" || __copy_skel /var/root sudo
+  fi
+}
+
+__configure_profiles() {
+  __copy_skel
+  __install_crons
+  __configure_root
+}
+
 __gitconfig_nag() {
   printf "\033[1m%s\033[0m:\n\n\t%s\n\n... \033[1m%s\033[0m\n" \
     "Remember to generate your ssh keys" \
@@ -131,9 +164,8 @@ __gitconfig_nag() {
 }
 
 main() {
-  __create_dirs_and_links
-  __copy_skel
-  __install_crons
+  __configure_dependencies
+  __configure_profiles
   __gitconfig_nag
 }
 

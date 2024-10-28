@@ -3,6 +3,7 @@
 *.bak
 *.orig
 *.log
+*.lock.json
 
 *.heic
 *.jpg
