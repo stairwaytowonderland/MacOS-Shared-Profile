@@ -114,7 +114,7 @@ __create_dirs_and_links() {
 __brewfile() {
   local brewfile="$1"
   if [ -r "$brewfile" ]; then
-    ! __confirm "Install dependencies from Homebrew?" "n" || install_brewfile "$brewfile"
+    ! __confirm "Install dependencies from Homebrew?" "y" || install_brewfile "$brewfile"
   fi
 }
 
