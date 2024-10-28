@@ -11,7 +11,7 @@ main() {
     bbdiffer "$@" || err=$?
     if [ $err -gt 0 ]; then
       case $err in
-        1) printf "For some reason '%s' always exits code 1.\n" "bbdiff";;
+        1) printf "For some reason '%s' always exits with code 1.\n" "bbdiff";;
         *) diff -- "$@";;
       esac
     fi
