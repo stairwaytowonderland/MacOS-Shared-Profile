@@ -31,7 +31,6 @@ indent_size = 2
 
 # YAML Files
 [*.{yml,yaml}]
-# placeholder
 
 # Markdown Files
 [*.{md,mdx}]
