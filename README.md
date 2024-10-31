@@ -13,3 +13,7 @@ git pull origin main
 ```bash
 make install
 ```
+
+## TODO
+
+- [ ] How to namespace `PROFILE_BASE_DIR` (`/etc/profile`)
