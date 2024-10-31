@@ -1,20 +1,7 @@
-# Ensure no double load
-! ${BASHRC_LOADED:-false} && return
-
-# If login shell display the calendar, else cd to home
-shopt login_shell >/dev/null && cal || cd ~
-
-# Load only .sh files from target dir
-for f in $(find /Users/Shared/etc/profile.d -mindepth 1 -maxdepth 1 -type f ! -name '.DS_Store' | sort); do
-  . "$f"
-done
-
-eval "$(/opt/homebrew/bin/brew shellenv)"
-
-export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
-[ -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" ] && . "$(brew --prefix)/etc/profile.d/bash_completion.sh"
-
-# Display aliases
-printf "\033[0;2m%s\033[0m\n" "$(alias)"
-
-[ ! -r "$(dirname $XDG_DATA_HOME)/bin" ] || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
+if [ -r /Users/Shared/dist/profile ]; then
+  . /Users/Shared/dist/profile
+else
+  for f in $(find /Users/Shared/etc/profile.stub.d -mindepth 1 -maxdepth 1 -type f ! -name '.*' | sort); do
+    . "$f"
+  done
+fi

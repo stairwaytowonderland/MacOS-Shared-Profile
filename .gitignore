@@ -9,6 +9,7 @@
 *.jpg
 *.zip
 
+/dist
 /private
 /bin
 /Tools

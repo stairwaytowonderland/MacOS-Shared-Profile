@@ -13,3 +13,9 @@ debug: $(TARGETS)
 
 install:
 	@bash -c 'sh $(SCRIPT_DIR)/setup/setup.sh'
+
+combined-profile:
+	@bash -c 'sh $(SCRIPT_DIR)/setup/profile/generate.sh'
+
+bbedit-default-editor:
+	@bash -c 'sh $(SCRIPT_DIR)/setup/bbedit/bbedit-default-editor'

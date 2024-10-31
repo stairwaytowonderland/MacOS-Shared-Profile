@@ -1,2 +1,2 @@
 # Weekly (At 00:00 on Sunday)
-0 0 * * 0 PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH" BREWFILE="/Users/Shared/setup/brew/$(whoami).Brewfile" && [ ! -r $BREWFILE ] || brew bundle install --file="$BREWFILE" >/dev/null 2>&1
+# 0 0 * * 0 PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH" BREWFILE="/Users/Shared/setup/brew/$(whoami).Brewfile" && [ ! -r $BREWFILE ] || brew bundle install --file="$BREWFILE" >/dev/null 2>&1
