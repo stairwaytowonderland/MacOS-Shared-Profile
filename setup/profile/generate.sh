@@ -39,15 +39,15 @@ __generate_profile() {
     if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/02-pieces.sh" ]; then
       for p in $(find "${BASE_DIR}/etc/profile.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
         log info "  - Appending '$p'"
-        echo "" >>"${BASE_DIR}/dist/profile"
+        printf "\n# -- BEGIN -- '%s'\n" "$p" >>"${BASE_DIR}/dist/profile"
         cat >>"${BASE_DIR}/dist/profile" <"$p"
+        printf "# -- END --\n" >>"${BASE_DIR}/dist/profile"
       done
     else
         log info "  - Appending '$f'"
         if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/00-header.sh" ]; then
           cat >>"${BASE_DIR}/dist/profile" <"$f"
         else
-          echo "" >>"${BASE_DIR}/dist/profile"
           cat >>"${BASE_DIR}/dist/profile" <"$f"
         fi
     fi
