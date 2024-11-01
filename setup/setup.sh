@@ -9,17 +9,17 @@ else
 fi
 
 BASE_DIR="$(dirname $SCRIPT_DIR)"
-UMASK_RESTORE="$(builtin umask)"
+
+[ -r "$BASE_DIR/etc/profile.d/01-functions.sh" ] && . "$BASE_DIR/etc/profile.d/01-functions.sh"
 
 # https://specifications.freedesktop.org/basedir-spec/latest/
-XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
+XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
+# Record the default umask value
+UMASK_DEFAULT=0022
+# Record the current umask value
+UMASK_RESTORE=$(builtin umask)
 
 errcho() { >&2 echo $@; }
-
-info() {
-  local str="$1"
-  printf "\033[94;1m%s\033[0m \033[0m%s\033[0m\n" "[INFO]" "$str"
-}
 
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
@@ -28,13 +28,13 @@ strip_last() {
 }
 
 install_brewfile() {
-  local brewfile="$BASE_DIR/setup/brew/$(whoami).Brewfile"
+  local brewfile="$BASE_DIR/setup/brew/Brewfile"
   local target="${1:-$brewfile}"
   brew bundle --file="$target"
 }
 
-__set_umask() { umask "${UMASK_DEFAULT:-$UMASK_RESTORE}"; }
-__restore_umask() { umask "${UMASK_RESTORE}"; }
+__set_umask() { umask $UMASK_DEFAULT; }
+__restore_umask() { umask $UMASK_RESTORE; }
 
 __confirm() {
   [ -n "${1:-""}" ] || return
@@ -51,10 +51,10 @@ __create_dir() {
   local dir="$1" group=staff
   if [ ! -r "$dir" ]; then
     if __confirm "Directory '$dir' doesn't exist. Create it?" "y" ; then
-      info "Creating dir '$dir'"
+      log_info "Creating dir '$dir'"
       mkdir -p "$dir"
       if __confirm "Reset group of '$dir' to '$group' (requires sudo)?" ; then
-        info "Resetting group of '$dir' to '$group'"
+        log_info "Resetting group of '$dir' to '$group'"
         sudo chown ":${group}" "$dir"
       fi
     fi
@@ -76,7 +76,7 @@ __create_symlink() {
   __ensure_parent_dir "$target"
   if [ ! -r "$target" ]; then
     __set_umask
-    info "Creating symlink '$source' => '$target'"
+    log_info "Creating symlink '$source' => '$target'"
     [ -r "$target" ] || ln -s "$source" "$target"
     __restore_umask
   fi
@@ -87,7 +87,7 @@ __copy_file() {
   __ensure_parent_dir "$target"
   if [ ! -r "$target" ]; then
     __set_umask
-    info "Copying '$source' to '$target'"
+    log_info "Copying '$source' to '$target'"
     cp "$source" "$target"
     __restore_umask
   fi
@@ -104,11 +104,12 @@ __create_bin() {
 
 __create_dirs_and_links() {
   __create_dir "${BASE_DIR}/Data"
-  __create_bin "${BASE_DIR}/lib" "${BASE_DIR}/bin"
+  __create_bin "${BASE_DIR}/lib" "${BASE_DIR}/dist/bin"
+  __create_symlink "${BASE_DIR}/dist/bin" "${BASE_DIR}/bin"
   __create_symlink "${BASE_DIR}/bin" "$(dirname $XDG_DATA_HOME)/bin"
   __create_symlink "${BASE_DIR}/etc/profile.d" "$(dirname $XDG_DATA_HOME)/profile.d"
   __create_symlink "${BASE_DIR}/.editorconfig" "$HOME/.editorconfig"
-  __create_symlink "${BASE_DIR}/setup/brew/$(whoami).Brewfile" "$HOME/Brewfile"
+  __create_symlink "${BASE_DIR}/setup/brew/Brewfile" "$HOME/Brewfile"
 }
 
 __brewfile() {
@@ -134,7 +135,7 @@ __copy_skel() {
 
 __install_crons() {
   if __confirm "Install user crons?" "y" ; then
-    info "Updating crontab with: $(ls ${BASE_DIR}/cron/{.header,*.cron})"
+    log_info "Updating crontab with: $(ls ${BASE_DIR}/cron/{.header,*.cron})"
     cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
   fi
   if __confirm "Install root crons (requires sudo)?" ; then

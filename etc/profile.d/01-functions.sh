@@ -1,17 +1,3 @@
-#!/bin/sh
-
-set -eu
-
-if [ -f "$0" ]; then
-  SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
-else
-  SCRIPT_DIR="$(pwd)"
-fi
-
-BASE_DIR="$(dirname $SCRIPT_DIR)"
-
-errcho() { >&2 echo $@; }
-
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
@@ -32,9 +18,3 @@ log_info() { logmsg info "$1"; }
 log_warn() { logmsg warn "$1"; }
 log_success() { logmsg success "$1"; }
 log_error() { logmsg error "$1"; }
-
-main() {
-
-}
-
-main "$@"

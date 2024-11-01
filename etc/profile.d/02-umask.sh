@@ -1,6 +1,6 @@
 # Record the default umask value on the 1st run
-[ -z "${UMASK_DEFAULT:-""}" ] && export UMASK_DEFAULT="$(builtin umask)"
-export UMASK_OVERRIDE="${UMASK_OVERRIDE:-""}"
+UMASK_DEFAULT=0022 # $(builtin umask)
+UMASK_OVERRIDE="${UMASK_OVERRIDE:-$UMASK_DEFAULT}"
 
 __umask_default() {
   export UMASK=$UMASK_DEFAULT
