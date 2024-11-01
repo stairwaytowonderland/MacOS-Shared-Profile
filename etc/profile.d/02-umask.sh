@@ -1,6 +1,8 @@
 # Record the default umask value on the 1st run
 UMASK_DEFAULT=0022 # $(builtin umask)
 UMASK_OVERRIDE="${UMASK_OVERRIDE:-$UMASK_DEFAULT}"
+UMASK_OVERRIDE_DIRS="${UMASK_OVERRIDE_DIRS:-""}"
+UMASK_OVERRIDE_EXCLUDE_DIRS="${UMASK_OVERRIDE_EXCLUDE_DIRS:-""}"
 
 __umask_default() {
   export UMASK=$UMASK_DEFAULT
@@ -12,13 +14,20 @@ __umask_override() {
 }
 
 _umask_hook() {
-  if [ -n "$UMASK_OVERRIDE" -a "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" ]; then
-    for d in $UMASK_OVERRIDE_DIRS; do
-      case $PWD/ in
-        $d/*) __umask_override;;
-        *) __umask_default;;
-      esac
-    done
+  if [ -n "$UMASK_OVERRIDE" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
+    if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" ]; then
+      for d in $UMASK_OVERRIDE_DIRS; do
+        case $PWD/ in
+          $d/*)
+            for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
+              [ "$PWD" = "$e" ] && flag=true && break || flag=false
+            done
+            $flag && __umask_default || __umask_override
+            ;;
+          *) __umask_default;;
+        esac
+      done
+    fi
   fi
   umask "$UMASK"
 }

@@ -1,6 +1,7 @@
 UMASK_OVERRIDE=0002
 # Space separated e.g. '/path/one /path/two /path/three ...'
-UMASK_OVERRIDE_DIRS=/Users/Shared
+UMASK_OVERRIDE_DIRS='/Users/Shared'
+UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
 export VISUAL="$HOME/.local/bin/bbeditor"
 export EDITOR="$VISUAL"

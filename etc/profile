@@ -1,9 +1,11 @@
 PROFILE_BASE_DIR=/Users/Shared
 
-if [ -r "${PROFILE_BASE_DIR}/dist/profile" ]; then
-  . "${PROFILE_BASE_DIR}/dist/profile"
-else
-  for f in $(find "${PROFILE_BASE_DIR}/dist/profile.stub.d" -mindepth 1 -maxdepth 1 -type f ! -name '.*' | sort); do
-    . "$f"
-  done
-fi
+# if [ -r "${PROFILE_BASE_DIR}/dist/profile" ]; then
+#   . "${PROFILE_BASE_DIR}/dist/profile"
+# else
+
+for f in $(find "${PROFILE_BASE_DIR}/etc/profile.stub.d" -mindepth 1 -maxdepth 1 -type f ! -name '.*' | sort); do
+  . "$f"
+done
+
+# fi
