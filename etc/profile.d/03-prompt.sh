@@ -6,6 +6,8 @@ export -f parse_git_branch
 
 parse_hostname() {
   local arg=${1:-1} replace=${2:-.}
+  local count=$(hostname | grep '\.' | wc -l | xargs echo)
+  [ $count -gt 1 ] || arg=1
   hostname | sed 's/\.lan$//' | cut -d. -f1-$arg | sed "s/\./$replace/g"
 }
 export -f parse_hostname

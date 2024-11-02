@@ -16,4 +16,4 @@ make install
 
 ## TODO
 
-- [ ] How to namespace `PROFILE_BASE_DIR` (`/etc/profile`)
+- [ ] - Hostname parsing for .local vs .lan
