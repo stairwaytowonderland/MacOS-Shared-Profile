@@ -1,11 +1,13 @@
-PROFILE_BASE_DIR=/Users/Shared
+load_profile() {
+  local profile_dir="$1"
+  local basedir="$(dirname $profile_dir)"
+  if [ -r "${basedir}/dist/profile" -a "${DEBUG_PROFILE:-false}" = "true" ]; then
+    . "${basedir}/dist/profile"
+  else
+    for f in $(find "${basedir}/etc/profile.stub.d" -mindepth 1 -maxdepth 1 -type f ! -name '.*' | sort); do
+      . "$f"
+    done
+  fi
+}
 
-# if [ -r "${PROFILE_BASE_DIR}/dist/profile" ]; then
-#   . "${PROFILE_BASE_DIR}/dist/profile"
-# else
-
-for f in $(find "${PROFILE_BASE_DIR}/etc/profile.stub.d" -mindepth 1 -maxdepth 1 -type f ! -name '.*' | sort); do
-  . "$f"
-done
-
-# fi
+load_profile "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
