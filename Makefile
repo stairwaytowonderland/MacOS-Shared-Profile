@@ -1,6 +1,6 @@
 # MAKEFLAGS += --no-print-directory
 
-.PHONY: all install brew-dump basic combined-profile bbedit-default-editor
+.PHONY: all install brew-dump basic full combined-profile bbedit-default-editor
 
 UNAME := $(shell uname -s)
 SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
@@ -18,6 +18,8 @@ all: $(TARGETS)
 install: .setup
 
 basic: .setup-basic
+
+full: install
 
 combined-profile:
 	@bash -cx '$(SCRIPT_DIR)/setup/profile/generate.sh'

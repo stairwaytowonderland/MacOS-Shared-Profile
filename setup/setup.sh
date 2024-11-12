@@ -11,7 +11,10 @@ fi
 BASE_DIR="$(dirname $SCRIPT_DIR)"
 UNAME=${UNAME:-$(uname -s)}
 
-[ -r "$BASE_DIR/etc/profile.d/01-functions.sh" ] && . "$BASE_DIR/etc/profile.d/01-functions.sh"
+export TRUE="${TRUE:-true}"
+export FALSE="${FALSE:-false}"
+
+[ -r "$BASE_DIR/etc/profile.d/02-functions.sh" ] && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
 # https://specifications.freedesktop.org/basedir-spec/latest/
 XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
@@ -23,9 +26,10 @@ UMASK_RESTORE=$(builtin umask)
 errcho() { >&2 echo $@; }
 
 logmsg() {
-  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-$false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  [ "${color_msg}" = "true" ] || color_msg=false
+  [ "${color_msg}" = "$true" ] || color_msg="$false"
   case $level in
     info) label_code="${label_code:-94}"; label="${label:-INFO}";;
     warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
@@ -37,7 +41,6 @@ logmsg() {
   label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
   printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
 }
-
 log_info() { logmsg info "$1"; }
 log_warn() { logmsg warn "$1"; }
 log_success() { logmsg success "$1"; }
@@ -95,23 +98,25 @@ __ensure_parent_dir() {
 
 __create_symlink() {
   local source="$1" target="$2"
-  __ensure_parent_dir "$target"
-  if [ ! -r "$target" ]; then
-    __set_umask
-    log_info "Creating symlink '$source' => '$target'"
-    [ -r "$target" ] || ln -s "$source" "$target"
-    __restore_umask
+  if __ensure_parent_dir "$target" ; then
+    if [ ! -r "$target" ]; then
+      __set_umask
+      log_info "Creating symlink '$source' => '$target'"
+      [ -r "$target" ] || ln -s "$source" "$target"
+      __restore_umask
+    fi
   fi
 }
 
 __copy_file() {
   local source="$1" target="$2"
-  __ensure_parent_dir "$target"
-  if [ ! -r "$target" ]; then
-    __set_umask
-    log_info "Copying '$source' to '$target'"
-    cp "$source" "$target"
-    __restore_umask
+  if __ensure_parent_dir "$target" ; then
+    if [ ! -r "$target" ]; then
+      __set_umask
+      log_info "Copying '$source' to '$target'"
+      cp "$source" "$target"
+      __restore_umask
+    fi
   fi
 }
 
@@ -147,12 +152,29 @@ __configure_dependencies() {
   __brewfile "$brewfile"
 }
 
-__copy_skel() {
-  local target="${1:-"$HOME"}" mode="${2:-""}" f=""
-  for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' -exec echo {} \;); do
-    $mode __copy_file "$f" "$target/"
+__copy_skel_bash() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  local target="${1:-"$HOME"}" sudo="${2:-$false}" mode="" f=""
+  ! is "$sudo" 2>/dev/null || mode=sudo
+  for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' ! -name '.git*' -exec echo {} \;); do
+    $mode __copy_file "$f" "$target/$(basename $f)"
   done
   unset f
+}
+
+__copy_skel_git() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  local target="${1:-"$HOME"}" sudo="${2:-$false}" mode="" f=""
+  ! is "$sudo" || mode=sudo
+  for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.git*' -exec echo {} \;); do
+    $mode __copy_file "$f" "$target/$(basename $f)"
+  done
+  unset f
+}
+
+__copy_skel() {
+  __copy_skel_bash $@
+  __copy_skel_git $@
 }
 
 __install_crons() {
@@ -169,7 +191,7 @@ __install_crons() {
 __configure_root() {
   if __confirm "Configure 'root' user (requires sudo)?" "n" ; then
     ! __confirm "Configure 'root' shell ($(command -v bash))?" "y" || sudo chsh -s "$(command -v bash)"
-    ! __confirm "Configure 'root' profile?" "y" || __copy_skel /var/root sudo
+    ! __confirm "Configure 'root' profile?" "y" || __copy_skel /var/root "${TRUE:-true}"
   fi
 }
 
@@ -187,7 +209,7 @@ __gitconfig_nag() {
 }
 
 __main_basic() {
-  __copy_skel
+  __copy_skel_bash
 }
 
 __main_linux() {
@@ -211,7 +233,7 @@ main() {
   if [ $# -gt 0 ]; then
     while [ $# -gt 0 ]; do
       case $1 in
-        true) __main_basic;;
+        "${TRUE:-true}") __main_basic;;
         *) ;;
       esac
       shift

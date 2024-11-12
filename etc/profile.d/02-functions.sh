@@ -10,9 +10,10 @@ errcho() { >&2 echo $@; }
 
 # Fancy Logging
 logmsg() {
-  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-$false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  [ "${color_msg}" = "${TRUE:-true}" ] || color_msg=false
+  [ "${color_msg}" = "$true" ] || color_msg="$false"
   case $level in
     info) label_code="${label_code:-94}"; label="${label:-INFO}";;
     warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
@@ -49,7 +50,7 @@ is() { is_true $1 || return $?; }
 
 # Value Checks
 equals() {
-  local success=false
+  local success="${FALSE:-false}"
   [ "$1" != "$2" ] || success="${TRUE:-true}" && errcho $success
   $success || return $?
 }
