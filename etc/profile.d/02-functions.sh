@@ -1,3 +1,10 @@
+is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
+is_interactive_mode() {
+  # Redundant check since initial case statement should handle check for interactive mode
+  echo $- | GREP_OPTIONS='' grep i >/dev/null
+}
+output() { ! is_interactive_mode || printf "\033[0;2m%s\033[0m\n" "$@"; }
+
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""

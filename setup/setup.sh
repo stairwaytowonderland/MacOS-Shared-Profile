@@ -20,6 +20,7 @@ UMASK_DEFAULT=0022
 UMASK_RESTORE=$(builtin umask)
 
 errcho() { >&2 echo $@; }
+is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
 
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"

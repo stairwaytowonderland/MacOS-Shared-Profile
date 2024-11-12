@@ -9,9 +9,9 @@
 *.jpg
 *.zip
 
-/dist
 /private
 /bin
+/dist/bin
 /Tools
 /Data
 /Backup

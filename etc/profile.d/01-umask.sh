@@ -14,22 +14,20 @@ __umask_override() {
 }
 
 _umask_hook() {
-  if [ -n "$UMASK_OVERRIDE" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
-    if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" ]; then
-      for d in $UMASK_OVERRIDE_DIRS; do
-        case $PWD/ in
-          $d/*)
-            for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
-              [ "$PWD" = "$e" ] && flag=true && break || flag=false
-            done
-            $flag && __umask_default || __umask_override
-            ;;
-          *) __umask_default;;
-        esac
-      done
-    fi
+  if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
+    for d in $UMASK_OVERRIDE_DIRS; do
+      case $(realpath $PWD)/ in
+        $d/*)
+          for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
+            [ "$(realpath $PWD)" = "$e" ] && flag=true && break || flag=false
+          done
+          $flag && __umask_default || __umask_override
+          ;;
+        *) __umask_default;;
+      esac
+    done
   fi
-  umask "$UMASK"
+  [ -z "$UMASK" ] || umask "$UMASK"
 }
 
 # Append `;` if PROMPT_COMMAND is not empty

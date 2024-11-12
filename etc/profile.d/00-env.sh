@@ -10,7 +10,7 @@ export GIT_EDITOR="$VISUAL"
 # Enable colors in bash
 export CLICOLOR=1
 export LSCOLORS=GxBxCxDxexegedabagaced
-export GREP_OPTIONS='--color=auto'
+# export GREP_OPTIONS='--color=auto' # Deprecated -- use option in alias
 export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
 
 # Hides the default login message

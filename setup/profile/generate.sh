@@ -13,6 +13,7 @@ fi
 BASE_DIR="$(dirname $(dirname $SCRIPT_DIR))"
 
 errcho() { >&2 echo $@; }
+is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
 
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
@@ -33,13 +34,13 @@ logmsg() {
 __generate_profile() {
   logmsg info "Generating profile from parts ..."
   [ -r "${BASE_DIR}/dist" ] || mkdir "${BASE_DIR}/dist"
-  printf "#\n# This file was automatically generated from '%s'\n" "$0" \
+  printf "#\n# This file was automatically generated from '%s'\n" $(echo "$0" | sed "s|$HOME|\$HOME|") \
     >"${BASE_DIR}/dist/profile"
   for f in $(find "${BASE_DIR}/etc/profile.stub.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
     if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/02-pieces.sh" ]; then
       for p in $(find "${BASE_DIR}/etc/profile.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
         logmsg info "  - Appending '$p'"
-        printf "\n# -- BEGIN -- '%s'\n" "$p" >>"${BASE_DIR}/dist/profile"
+        printf "\n# -- BEGIN -- '%s'\n" $(echo "$p" | sed "s|$HOME|\$HOME|") >>"${BASE_DIR}/dist/profile"
         printf "# ------------------------------------------------------------\n" >>"${BASE_DIR}/dist/profile"
         cat >>"${BASE_DIR}/dist/profile" <"$p"
         printf "# ------------------------------------------------------------\n" >>"${BASE_DIR}/dist/profile"

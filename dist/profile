@@ -1,0 +1,213 @@
+#
+# This file was automatically generated from '$HOME/Shared/setup/profile/generate.sh'
+#
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+# (for debian-based systems only)
+# if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+#     debian_chroot=$(cat /etc/debian_chroot)
+# fi
+
+# If not login shell, cd to home
+shopt login_shell >/dev/null || cd ~
+
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/00-env.sh'
+# ------------------------------------------------------------
+UMASK_OVERRIDE=0002
+# Space separated e.g. '/path/one /path/two /path/three ...'
+UMASK_OVERRIDE_DIRS='/Users/Shared'
+UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
+
+export VISUAL="$HOME/.local/bin/bbeditor"
+export EDITOR="$VISUAL"
+export GIT_EDITOR="$VISUAL"
+
+# Enable colors in bash
+export CLICOLOR=1
+export LSCOLORS=GxBxCxDxexegedabagaced
+# export GREP_OPTIONS='--color=auto' # Deprecated -- use option in alias
+export GREP_COLORS='ms=01;31:mc=01;31:sl=:cx=:fn=35:ln=32:bn=32:se=36'
+
+# Hides the default login message
+export BASH_SILENCE_DEPRECATION_WARNING=1
+
+# https://specifications.freedesktop.org/basedir-spec/latest/
+export XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
+
+# Load ~/.env if it exists
+[ ! -r ~/.env ] || . ~/.env
+# ------------------------------------------------------------
+# -- END --
+
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/01-prompt.sh'
+# ------------------------------------------------------------
+# get current git branch
+parse_git_branch() {
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+export -f parse_git_branch
+
+parse_hostname() {
+  local arg=${1:-1} replace=${2:-.}
+  local count=$(hostname | grep -o '\.' | wc -l | xargs echo)
+  [ $count -gt 1 ] || arg=1
+  hostname | sed -E 's/\.lan|\.local$//' | cut -d. -f1-$arg | sed "s/\./$replace/g"
+}
+export -f parse_hostname
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+  xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+  if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    # We have color support; assume it's compliant with Ecma-48
+    # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    # a case would tend to support setf rather than setaf.)
+    color_prompt=yes
+  else
+    color_prompt=
+  fi
+fi
+
+# Use 'parse_hostname' instead of '\h' for advacned customization
+if [ "$color_prompt" = "yes" ]; then
+  _PS1="\[\033[01;34m\]\u\[\033[0m\]@\[\033[01;32m\]\$(parse_hostname 10 '-')\[\033[00m\]:\[\033[01;34m\]\w\[\033[0;32m\]\$(parse_git_branch)\[\033[00m\]\$ "
+else
+  _PS1="\u@\$(parse_hostname 10 '-'):\w\$(parse_git_branch)\$ "
+fi
+unset color_prompt force_color_prompt
+export PS1=$_PS1
+# ------------------------------------------------------------
+# -- END --
+
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/01-umask.sh'
+# ------------------------------------------------------------
+# Record the default umask value on the 1st run
+UMASK_DEFAULT=0022 # $(builtin umask)
+UMASK_OVERRIDE="${UMASK_OVERRIDE:-$UMASK_DEFAULT}"
+UMASK_OVERRIDE_DIRS="${UMASK_OVERRIDE_DIRS:-""}"
+UMASK_OVERRIDE_EXCLUDE_DIRS="${UMASK_OVERRIDE_EXCLUDE_DIRS:-""}"
+
+__umask_default() {
+  export UMASK=$UMASK_DEFAULT
+}
+
+__umask_override() {
+  printf "\033[0;2m%s\033[0m: \033[91;2m%s\033[0m=>\033[92;2m%s\033[0m\n" "Overriding default umask" "$UMASK_DEFAULT" "$UMASK_OVERRIDE"
+  export UMASK=$UMASK_OVERRIDE
+}
+
+_umask_hook() {
+  if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
+    for d in $UMASK_OVERRIDE_DIRS; do
+      case $(realpath $PWD)/ in
+        $d/*)
+          for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
+            [ "$(realpath $PWD)" = "$e" ] && flag=true && break || flag=false
+          done
+          $flag && __umask_default || __umask_override
+          ;;
+        *) __umask_default;;
+      esac
+    done
+  fi
+  [ -z "$UMASK" ] || umask "$UMASK"
+}
+
+# Append `;` if PROMPT_COMMAND is not empty
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}_umask_hook"
+# ------------------------------------------------------------
+# -- END --
+
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/02-aliases.sh'
+# ------------------------------------------------------------
+# Standard
+alias ls='ls -G --color=auto'
+alias ll='ls -lahF'
+alias la='ls -A'
+alias l='ls -CF'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+# Custom
+alias containerfy='cd ~/Tools/containerfy'
+alias cdr='cd $(realpath)'
+# ------------------------------------------------------------
+# -- END --
+
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/02-functions.sh'
+# ------------------------------------------------------------
+is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
+is_interactive_mode() {
+  # Redundant check since initial case statement should handle check for interactive mode
+  echo $- | GREP_OPTIONS='' grep i >/dev/null
+}
+output() { ! is_interactive_mode || printf "\033[0;2m%s\033[0m\n" "$@"; }
+
+logmsg() {
+  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
+    label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
+  [ "${color_msg}" = "true" ] || color_msg=false
+  case $level in
+    info) label_code="${label_code:-94}"; label="${label:-INFO}";;
+    warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
+    success) label_code="${label_code:-92}"; label="${label:-SUCCESS}";;
+    error) label_code="${label_code:-91}"; label="${label:-ERROR}";;
+    *) label_code="${label_code:-0}"; label="${label:-$level}";;
+  esac
+  ! $color_msg || msg_code=$label_code
+  label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
+  printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
+}
+
+log_info() { logmsg info "$1"; }
+log_warn() { logmsg warn "$1"; }
+log_success() { logmsg success "$1"; }
+log_error() { logmsg error "$1"; }
+# ------------------------------------------------------------
+# -- END --
+
+eval "$(/opt/homebrew/bin/brew shellenv)"
+
+export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
+[ -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" ] && . "$(brew --prefix)/etc/profile.d/bash_completion.sh"
+
+# Display aliases (only output if interactive mode)
+output "$(alias)"
+
+[ ! -r "$(dirname $XDG_DATA_HOME)/bin" ] || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
