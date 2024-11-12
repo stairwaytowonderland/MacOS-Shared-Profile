@@ -11,6 +11,8 @@ else
 fi
 
 BASE_DIR="$(dirname $(dirname $SCRIPT_DIR))"
+FILE_NAME=dist/bashrc
+FILE_PATH="${BASE_DIR}/${FILE_NAME}"
 
 errcho() { >&2 echo $@; }
 is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
@@ -35,24 +37,24 @@ __generate_profile() {
   logmsg info "Generating profile from parts ..."
   [ -r "${BASE_DIR}/dist" ] || mkdir "${BASE_DIR}/dist"
   printf "#\n# This file was automatically generated from '%s'\n" $(echo "$0" | sed "s|$HOME|\$HOME|") \
-    >"${BASE_DIR}/dist/profile"
+    >"$FILE_PATH"
   for f in $(find "${BASE_DIR}/etc/profile.stub.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
     if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/02-pieces.sh" ]; then
       for p in $(find "${BASE_DIR}/etc/profile.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
         logmsg info "  - Appending '$p'"
-        printf "\n# -- BEGIN -- '%s'\n" $(echo "$p" | sed "s|$HOME|\$HOME|") >>"${BASE_DIR}/dist/profile"
-        printf "# ------------------------------------------------------------\n" >>"${BASE_DIR}/dist/profile"
-        cat >>"${BASE_DIR}/dist/profile" <"$p"
-        printf "# ------------------------------------------------------------\n" >>"${BASE_DIR}/dist/profile"
-        printf "# -- END --\n" >>"${BASE_DIR}/dist/profile"
+        printf "\n# -- BEGIN -- '%s'\n" $(echo "$p" | sed "s|$HOME|\$HOME|") >>"$FILE_PATH"
+        printf "# ------------------------------------------------------------\n" >>"$FILE_PATH"
+        cat >>"$FILE_PATH" <"$p"
+        printf "# ------------------------------------------------------------\n" >>"$FILE_PATH"
+        printf "# -- END --\n" >>"$FILE_PATH"
       done
     else
         logmsg info "  - Appending '$f'"
         if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/00-header.sh" ]; then
-          cat >>"${BASE_DIR}/dist/profile" <"$f"
+          cat >>"$FILE_PATH" <"$f"
         else
-          printf "\n" >>"${BASE_DIR}/dist/profile"
-          cat >>"${BASE_DIR}/dist/profile" <"$f"
+          printf "\n" >>"$FILE_PATH"
+          cat >>"$FILE_PATH" <"$f"
         fi
     fi
   done
