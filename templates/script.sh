@@ -27,6 +27,11 @@ is_true() {
 }
 is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null  || return $?; }
 is() { is_true $1 || return $?; }
+equals() {
+  local success=false
+  [ "$1" != "$2" ] || success=true && echo $success >&2
+  $success || return $?
+}
 
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \

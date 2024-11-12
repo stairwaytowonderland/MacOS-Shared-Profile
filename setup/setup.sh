@@ -190,16 +190,16 @@ main() {
   if [ $# -gt 0 ]; then
     while [ $# -gt 0 ]; do
       case $1 in
-        true) echo "__main_basic";;
+        true) __main_basic;;
         *) ;;
       esac
       shift
     done
   else
     case $(echo $UNAME | awk -F'_' '{print $1}') in
-      Linux) echo "__main_linux";;
-      Darwin) echo "__main_darwin";;
-      MINGW64) echo "__main_mingw64";;
+      Linux) __main_linux;;
+      Darwin) __main_darwin;;
+      MINGW64) __main_mingw64;;
       *) printf "\033[1;31m%s: %s\033[0m\n" "Fatal Error" "Unsupported system"; return 1;;
     esac
   fi

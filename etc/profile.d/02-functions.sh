@@ -14,6 +14,11 @@ is_true() {
 }
 is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null  || return $?; }
 is() { is_true $1 || return $?; }
+equals() {
+  local success=false
+  [ "$1" != "$2" ] || success=true && echo $success >&2
+  $success || return $?
+}
 is_interactive_mode() {
   # Ideally a redundant check since initial case statement should handle check for interactive mode
   echo $- | GREP_OPTIONS='' grep i >/dev/null
@@ -40,3 +45,18 @@ log_info() { logmsg info "$1"; }
 log_warn() { logmsg warn "$1"; }
 log_success() { logmsg success "$1"; }
 log_error() { logmsg error "$1"; }
+
+shellos() {
+  shopt -s nocasematch
+  case $(uname -s | awk -F'_' '{print $1}') in
+    Linux) echo Linux;;
+    Darwin) echo Darwin;;
+    MINGW64) echo MINGW64;;
+    *) printf "\033[1;31m%s: %s\033[0m\n" "Fatal Error" "Unsupported system"; return 1;;
+  esac
+  shopt -u nocasematch
+}
+
+is_darwin() { equals "$(shellos)" "Darwin" || return $?; }
+is_linux() { equals "$(shellos)" "Linux" || return $?; }
+is_mingw64() { equals "$(shellos)" "MINGW64" || return $?; }
