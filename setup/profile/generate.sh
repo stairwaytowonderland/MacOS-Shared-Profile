@@ -15,7 +15,6 @@ FILE_NAME=dist/bashrc
 FILE_PATH="${BASE_DIR}/${FILE_NAME}"
 
 errcho() { >&2 echo $@; }
-is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
 
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \

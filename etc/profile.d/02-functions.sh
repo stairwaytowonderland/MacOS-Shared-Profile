@@ -1,6 +1,21 @@
-is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
+is_bool() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) echo $true >&2;;
+    *) echo $false >&2; return 1;;
+  esac
+}
+is_true() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) echo $true >&2;;
+    *) echo $false >&2; return 1;;
+  esac
+}
+is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null  || return $?; }
+is() { is_true $1 || return $?; }
 is_interactive_mode() {
-  # Redundant check since initial case statement should handle check for interactive mode
+  # Ideally a redundant check since initial case statement should handle check for interactive mode
   echo $- | GREP_OPTIONS='' grep i >/dev/null
 }
 output() { ! is_interactive_mode || printf "\033[0;2m%s\033[0m\n" "$@"; }

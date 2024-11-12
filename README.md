@@ -13,7 +13,3 @@ git pull origin main
 ```bash
 make install
 ```
-
-## TODO
-
-- [ ] - Hostname parsing for .local vs .lan

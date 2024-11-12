@@ -11,7 +11,22 @@ fi
 BASE_DIR="$(dirname $SCRIPT_DIR)"
 
 errcho() { >&2 echo $@; }
-is() { [ "${1:-false}" = "true" -o "${1:-0}" = "1" ] || return $?; }
+is_bool() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) echo $true >&2;;
+    *) echo $false >&2; return 1;;
+  esac
+}
+is_true() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) echo $true >&2;;
+    *) echo $false >&2; return 1;;
+  esac
+}
+is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null  || return $?; }
+is() { is_true $1 || return $?; }
 
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
