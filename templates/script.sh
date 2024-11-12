@@ -11,27 +11,6 @@ fi
 BASE_DIR="$(dirname $SCRIPT_DIR)"
 
 errcho() { >&2 echo $@; }
-is_bool() {
-  local true="${TRUE:-true}" false="${FALSE:-false}"
-  case $1 in
-    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) echo $true >&2;;
-    *) echo $false >&2; return 1;;
-  esac
-}
-is_true() {
-  local true="${TRUE:-true}" false="${FALSE:-false}"
-  case $1 in
-    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) echo $true >&2;;
-    *) echo $false >&2; return 1;;
-  esac
-}
-is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null  || return $?; }
-is() { is_true $1 || return $?; }
-equals() {
-  local success=false
-  [ "$1" != "$2" ] || success=true && echo $success >&2
-  $success || return $?
-}
 
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
@@ -53,6 +32,28 @@ log_info() { logmsg info "$1"; }
 log_warn() { logmsg warn "$1"; }
 log_success() { logmsg success "$1"; }
 log_error() { logmsg error "$1"; }
+
+is_bool() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) echo $true >&2;;
+    *) echo $false >&2; return 1;;
+  esac
+}
+is_true() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) echo $true >&2;;
+    *) echo $false >&2; return 1;;
+  esac
+}
+is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null  || return $?; }
+is() { is_true $1 || return $?; }
+equals() {
+  local success=false
+  [ "$1" != "$2" ] || success=true && echo $success >&2
+  $success || return $?
+}
 
 main() {
 

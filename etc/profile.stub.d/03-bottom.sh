@@ -1,4 +1,4 @@
-if is_darwin || is_linux; then
+if is_darwin 2>/dev/null || is_linux 2>/dev/null; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 
   export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
