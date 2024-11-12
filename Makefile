@@ -1,6 +1,6 @@
 # MAKEFLAGS += --no-print-directory
 
-.PHONY: all install brew-dump
+.PHONY: all install brew-dump basic combined-profile bbedit-default-editor
 
 UNAME := $(shell uname -s)
 SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
@@ -9,10 +9,15 @@ BREWFILE := "$(SCRIPT_DIR)/setup/brew/Brewfile"
 all: $(TARGETS)
 	@printf "\033[1m%s\033[0m\n" "Please specify additional targets"
 
-install:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh'
+.setup:
+	@bash -cx 'UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh'
 
-setup: install
+.setup-basic:
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh true'
+
+install: .setup
+
+basic: .setup-basic
 
 combined-profile:
 	@bash -cx '$(SCRIPT_DIR)/setup/profile/generate.sh'
