@@ -14,14 +14,24 @@ esac
 # If not login shell, cd to home
 shopt login_shell >/dev/null || cd ~
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/00-env.sh'
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/01-env.sh'
 # ------------------------------------------------------------
+FORCE_COLOR_PROMPT_WINDOWS=true
+
 UMASK_OVERRIDE=0002
 # Space separated e.g. '/path/one /path/two /path/three ...'
 UMASK_OVERRIDE_DIRS='/Users/Shared'
 UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
-export VISUAL="$HOME/.local/bin/bbeditor"
+if [ -r "$HOME/.local/bin/bbeditor" ]; then
+  export VISUAL="$HOME/.local/bin/bbeditor"
+elif command -v code >/dev/null ; then
+  export VISUAL="$(command -v code)"
+elif command -v nano >/dev/null ; then
+  export VISUAL="$(command -v nano)"
+else
+  export VISUAL="vi"
+fi
 export EDITOR="$VISUAL"
 export GIT_EDITOR="$VISUAL"
 
@@ -70,7 +80,85 @@ shopt -s checkwinsize
 # ------------------------------------------------------------
 # -- END --
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/01-prompt.sh'
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/02-functions.sh'
+# ------------------------------------------------------------
+# Interactive Mode Check
+is_interactive_mode() {
+  # Ideally a redundant check since initial case statement should handle check for interactive mode
+  echo $- | GREP_OPTIONS='' grep i >/dev/null
+}
+
+# Basic Output
+output() { ! is_interactive_mode || printf "\033[0;2m%s\033[0m\n" "$@"; }
+errcho() { >&2 echo $@; }
+
+# Fancy Logging
+logmsg() {
+  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
+    label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
+  [ "${color_msg}" = "${TRUE:-true}" ] || color_msg=false
+  case $level in
+    info) label_code="${label_code:-94}"; label="${label:-INFO}";;
+    warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
+    success) label_code="${label_code:-92}"; label="${label:-SUCCESS}";;
+    error) label_code="${label_code:-91}"; label="${label:-ERROR}";;
+    *) label_code="${label_code:-0}"; label="${label:-$level}";;
+  esac
+  ! $color_msg || msg_code=$label_code
+  label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
+  printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
+}
+log_info() { logmsg info "$1"; }
+log_warn() { logmsg warn "$1"; }
+log_success() { logmsg success "$1"; }
+log_error() { logmsg error "$1"; }
+
+# Boolean Checks
+is_bool() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho $true;;
+    *) errcho $false; return 1;;
+  esac
+}
+is_true() {
+  local true="${TRUE:-true}" false="${FALSE:-false}"
+  case $1 in
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho $true;;
+    *) errcho $false; return 1;;
+  esac
+}
+is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null || return $?; }
+is() { is_true $1 || return $?; }
+
+# Value Checks
+equals() {
+  local success=false
+  [ "$1" != "$2" ] || success="${TRUE:-true}" && errcho $success
+  $success || return $?
+}
+
+# Shell System Checks
+is_darwin() { uname -s | grep -i Darwin >/dev/null 2>&1 || return $?; }
+is_linux() { uname -s | grep -i Linux >/dev/null 2>&1 || return $?; }
+is_mingw64() { uname -s | grep -i MINGW64 >/dev/null 2>&1 || return $?; }
+is_windows() { is_mingw64 || return $?; }
+
+# GNU Equivalents
+__realpath() (
+    local path=$1 file=''
+    if [ ! -d "$path" ]; then
+      file=/$(basename -- "$path")
+      path=$(dirname -- "$path")
+    fi
+    path=$(cd -- "$path" && pwd)$file || return $?
+    printf %s\\n "/${path#"${path%%[!/]*}"}"
+)
+command -v realpath >/dev/null || alias realpath='__realpath'
+# ------------------------------------------------------------
+# -- END --
+
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/03-prompt.sh'
 # ------------------------------------------------------------
 # get current git branch
 parse_git_branch() {
@@ -95,6 +183,9 @@ esac
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
 #force_color_prompt=yes
+if is "${FORCE_COLOR_PROMPT_WINDOWS:-false}" 2>/dev/null ; then
+  ! is_windows || force_color_prompt=yes
+fi
 
 if [ -n "$force_color_prompt" ]; then
   if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
@@ -125,7 +216,7 @@ export PS1=$_PS1
 # ------------------------------------------------------------
 # -- END --
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/01-umask.sh'
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/04-umask.sh'
 # ------------------------------------------------------------
 # Record the default umask value on the 1st run
 UMASK_DEFAULT=0022 # $(builtin umask)
@@ -145,15 +236,17 @@ __umask_override() {
 _umask_hook() {
   if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
     for d in $UMASK_OVERRIDE_DIRS; do
-      case $(realpath $PWD)/ in
-        $d/*)
-          for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
-            [ "$(realpath $PWD)" = "$e" ] && flag=true && break || flag=false
-          done
-          $flag && __umask_default || __umask_override
-          ;;
-        *) __umask_default;;
-      esac
+      if [ -d "$d" ]; then
+        case $(realpath $PWD)/ in
+          $d/*)
+            for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
+              [ "$(realpath $PWD)" = "$(realpath $e)" ] && flag=true && break || flag=false
+            done
+            $flag && __umask_default || __umask_override
+            ;;
+          *) __umask_default;;
+        esac
+      fi
     done
   fi
   [ -z "$UMASK" ] || umask "$UMASK"
@@ -164,7 +257,7 @@ PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}_umask_hook"
 # ------------------------------------------------------------
 # -- END --
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/02-aliases.sh'
+# -- BEGIN -- '$HOME/Shared/etc/profile.d/05-aliases.sh'
 # ------------------------------------------------------------
 # Standard
 alias ls='ls -G --color=auto'
@@ -176,65 +269,7 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 # Custom
 alias containerfy='cd ~/Tools/containerfy'
-alias cdr='cd $(realpath)'
-# ------------------------------------------------------------
-# -- END --
-
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/02-functions.sh'
-# ------------------------------------------------------------
-errcho() { >&2 echo $@; }
-
-logmsg() {
-  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
-    label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  [ "${color_msg}" = "true" ] || color_msg=false
-  case $level in
-    info) label_code="${label_code:-94}"; label="${label:-INFO}";;
-    warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
-    success) label_code="${label_code:-92}"; label="${label:-SUCCESS}";;
-    error) label_code="${label_code:-91}"; label="${label:-ERROR}";;
-    *) label_code="${label_code:-0}"; label="${label:-$level}";;
-  esac
-  ! $color_msg || msg_code=$label_code
-  label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
-  printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
-}
-
-log_info() { logmsg info "$1"; }
-log_warn() { logmsg warn "$1"; }
-log_success() { logmsg success "$1"; }
-log_error() { logmsg error "$1"; }
-
-is_bool() {
-  local true="${TRUE:-true}" false="${FALSE:-false}"
-  case $1 in
-    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho $true;;
-    *) errcho $false; return 1;;
-  esac
-}
-is_true() {
-  local true="${TRUE:-true}" false="${FALSE:-false}"
-  case $1 in
-    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho $true;;
-    *) errcho $false; return 1;;
-  esac
-}
-is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null || return $?; }
-is() { is_true $1 || return $?; }
-equals() {
-  local success=false
-  [ "$1" != "$2" ] || success=true && errcho $success
-  $success || return $?
-}
-is_interactive_mode() {
-  # Ideally a redundant check since initial case statement should handle check for interactive mode
-  echo $- | GREP_OPTIONS='' grep i >/dev/null
-}
-output() { ! is_interactive_mode || printf "\033[0;2m%s\033[0m\n" "$@"; }
-
-is_darwin() { uname -s | grep -i Darwin >/dev/null 2>&1 || return $?; }
-is_linux() { uname -s | grep -i Linux >/dev/null 2>&1 || return $?; }
-is_mingw64() { uname -s | grep -i MINGW64 >/dev/null 2>&1 || return $?; }
+alias pwdr='cd $(realpath)'
 # ------------------------------------------------------------
 # -- END --
 

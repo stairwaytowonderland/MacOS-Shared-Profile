@@ -16,15 +16,17 @@ __umask_override() {
 _umask_hook() {
   if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
     for d in $UMASK_OVERRIDE_DIRS; do
-      case $(realpath $PWD)/ in
-        $d/*)
-          for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
-            [ "$(realpath $PWD)" = "$e" ] && flag=true && break || flag=false
-          done
-          $flag && __umask_default || __umask_override
-          ;;
-        *) __umask_default;;
-      esac
+      if [ -d "$d" ]; then
+        case $(realpath $PWD)/ in
+          $d/*)
+            for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
+              [ "$(realpath $PWD)" = "$(realpath $e)" ] && flag=true && break || flag=false
+            done
+            $flag && __umask_default || __umask_override
+            ;;
+          *) __umask_default;;
+        esac
+      fi
     done
   fi
   [ -z "$UMASK" ] || umask "$UMASK"

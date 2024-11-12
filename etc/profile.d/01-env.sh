@@ -1,9 +1,19 @@
+FORCE_COLOR_PROMPT_WINDOWS=true
+
 UMASK_OVERRIDE=0002
 # Space separated e.g. '/path/one /path/two /path/three ...'
 UMASK_OVERRIDE_DIRS='/Users/Shared'
 UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
-export VISUAL="$HOME/.local/bin/bbeditor"
+if [ -r "$HOME/.local/bin/bbeditor" ]; then
+  export VISUAL="$HOME/.local/bin/bbeditor"
+elif command -v code >/dev/null ; then
+  export VISUAL="$(command -v code)"
+elif command -v nano >/dev/null ; then
+  export VISUAL="$(command -v nano)"
+else
+  export VISUAL="vi"
+fi
 export EDITOR="$VISUAL"
 export GIT_EDITOR="$VISUAL"
 
