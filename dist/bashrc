@@ -116,20 +116,20 @@ log_error() { logmsg error "$1"; }
 # Boolean Checks
 is_bool() {
   case $1 in
-    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho $TRUE >&2;;
-    *) errcho $FALSE >&2; return 1;;
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho $TRUE;;
+    *) errcho $FALSE; return 1;;
   esac
 }
 is_true() {
   case $1 in
-    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho $TRUE >&2;;
-    *) errcho $FALSE >&2; return 1;;
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho $TRUE;;
+    *) errcho $FALSE; return 1;;
   esac
 }
 is_false() {
   local err=0
   is_bool $1 2>/dev/null && ! is_true $1 || err=$?
-  [ $err -gt 0 ] && errcho $FALSE >&2 && return $err || errcho $TRUE >&2
+  [ $err -gt 0 ] && errcho $FALSE && return $err || errcho $TRUE
 }
 is() { is_true $1 2>/dev/null || return $?; }
 
