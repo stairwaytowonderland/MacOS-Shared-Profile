@@ -21,7 +21,7 @@ esac
 # off by default to not distract the user: the focus in a terminal window
 # should be on the output of commands, not on the prompt
 #force_color_prompt=yes
-if is "${FORCE_COLOR_PROMPT_WINDOWS:-false}" ; then
+if is "${FORCE_COLOR_PROMPT_WINDOWS:-$FALSE}" ; then
   ! is_windows || force_color_prompt=yes
 fi
 
