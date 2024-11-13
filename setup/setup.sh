@@ -9,10 +9,10 @@ else
 fi
 
 BASE_DIR="$(dirname $SCRIPT_DIR)"
-UNAME=${UNAME:-$(uname -s)}
+UNAME="${UNAME:-$(uname -s)}"
 
-export TRUE="${TRUE:-true}"
-export FALSE="${FALSE:-false}"
+export TRUE=true
+export FALSE=false
 
 [ -r "$BASE_DIR/etc/profile.d/02-functions.sh" ] && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
@@ -23,29 +23,6 @@ UMASK_DEFAULT=0022
 # Record the current umask value
 UMASK_RESTORE=$(builtin umask)
 
-errcho() { >&2 echo $@; }
-
-logmsg() {
-  local true="${TRUE:-true}" false="${FALSE:-false}"
-  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-$false}" \
-    label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  [ "${color_msg}" = "$true" ] || color_msg="$false"
-  case $level in
-    info) label_code="${label_code:-94}"; label="${label:-INFO}";;
-    warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
-    success) label_code="${label_code:-92}"; label="${label:-SUCCESS}";;
-    error) label_code="${label_code:-91}"; label="${label:-ERROR}";;
-    *) label_code="${label_code:-0}"; label="${label:-$level}";;
-  esac
-  ! $color_msg || msg_code=$label_code
-  label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
-  printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
-}
-log_info() { logmsg info "$1"; }
-log_warn() { logmsg warn "$1"; }
-log_success() { logmsg success "$1"; }
-log_error() { logmsg error "$1"; }
-
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
   [ "$delimeter" = "." ] || pattern="(.*)${delimeter}(.*)$"
@@ -55,7 +32,7 @@ strip_last() {
 install_brewfile() {
   local brewfile="$BASE_DIR/setup/brew/Brewfile"
   local target="${1:-$brewfile}"
-  brew bundle --file="$target"
+  is_debug || brew bundle --file="$target"
 }
 
 __set_umask() { umask $UMASK_DEFAULT; }
@@ -74,13 +51,13 @@ __confirm() {
 
 __create_dir() {
   local dir="$1" group=staff
-  if [ ! -r "$dir" ]; then
+  if [ ! -r "$dir" ] || is_debug ; then
     if __confirm "Directory '$dir' doesn't exist. Create it?" "y" ; then
       log_info "Creating dir '$dir'"
-      mkdir -p "$dir"
+      is_debug || mkdir -p "$dir"
       if __confirm "Reset group of '$dir' to '$group' (requires sudo)?" ; then
         log_info "Resetting group of '$dir' to '$group'"
-        sudo chown ":${group}" "$dir"
+        is_debug || sudo chown ":${group}" "$dir"
       fi
     fi
   fi
@@ -99,10 +76,10 @@ __ensure_parent_dir() {
 __create_symlink() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if [ ! -r "$target" ]; then
+    if [ ! -r "$target" ] || is_debug ; then
       __set_umask
       log_info "Creating symlink '$source' => '$target'"
-      [ -r "$target" ] || ln -s "$source" "$target"
+      is_debug || ln -s "$source" "$target"
       __restore_umask
     fi
   fi
@@ -111,10 +88,10 @@ __create_symlink() {
 __copy_file() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if [ ! -r "$target" ]; then
+    if [ ! -r "$target" ] || is_debug ; then
       __set_umask
       log_info "Copying '$source' to '$target'"
-      cp "$source" "$target"
+      is_debug || cp "$source" "$target"
       __restore_umask
     fi
   fi
@@ -153,9 +130,8 @@ __configure_dependencies() {
 }
 
 __copy_skel_bash() {
-  local true="${TRUE:-true}" false="${FALSE:-false}"
-  local target="${1:-"$HOME"}" sudo="${2:-$false}" mode="" f=""
-  ! is "$sudo" 2>/dev/null || mode=sudo
+  local target="${1:-"$HOME"}" sudo="${2:-$FALSE}" mode="" f=""
+  ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' ! -name '.git*' -exec echo {} \;); do
     $mode __copy_file "$f" "$target/$(basename $f)"
   done
@@ -163,8 +139,7 @@ __copy_skel_bash() {
 }
 
 __copy_skel_git() {
-  local true="${TRUE:-true}" false="${FALSE:-false}"
-  local target="${1:-"$HOME"}" sudo="${2:-$false}" mode="" f=""
+  local target="${1:-"$HOME"}" sudo="${2:-$FALSE}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.git*' -exec echo {} \;); do
     $mode __copy_file "$f" "$target/$(basename $f)"
@@ -180,18 +155,22 @@ __copy_skel() {
 __install_crons() {
   if __confirm "Install user crons?" "y" ; then
     log_info "Updating crontab with: $(ls ${BASE_DIR}/cron/{.header,*.cron})"
-    cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
+    is_debug || cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
   fi
   if __confirm "Install root crons (requires sudo)?" ; then
     printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
-    cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
+    is_debug || cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
   fi
 }
 
 __configure_root() {
   if __confirm "Configure 'root' user (requires sudo)?" "n" ; then
-    ! __confirm "Configure 'root' shell ($(command -v bash))?" "y" || sudo chsh -s "$(command -v bash)"
-    ! __confirm "Configure 'root' profile?" "y" || __copy_skel /var/root "${TRUE:-true}"
+    if __confirm "Configure 'root' shell ($(command -v bash))?" "y" ; then
+      is_debug || sudo chsh -s "$(command -v bash)"
+    fi
+    if __confirm "Configure 'root' profile?" "y" ; then
+      __copy_skel /var/root "$TRUE"
+    fi
   fi
 }
 
@@ -229,11 +208,12 @@ __main_mingw64() {
 }
 
 main() {
+  ! is_debug || log_warn "DEBUG: $TRUE ... Output Only (hopefully)"
   shopt -s nocasematch
   if [ $# -gt 0 ]; then
     while [ $# -gt 0 ]; do
       case $1 in
-        "${TRUE:-true}") __main_basic;;
+        $TRUE) __main_basic;;
         *) ;;
       esac
       shift
