@@ -148,8 +148,8 @@ __copy_skel_git() {
 }
 
 __copy_skel() {
-  __copy_skel_bash $@
-  __copy_skel_git $@
+  __copy_skel_bash "$@"
+  __copy_skel_git "$@"
 }
 
 __install_crons() {
@@ -157,6 +157,9 @@ __install_crons() {
     log_info "Updating crontab with: $(ls ${BASE_DIR}/cron/{.header,*.cron})"
     is_debug || cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
   fi
+}
+
+__install_root_crons() {
   if __confirm "Install root crons (requires sudo)?" ; then
     printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
     is_debug || cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
@@ -177,6 +180,7 @@ __configure_root() {
 __configure_profiles() {
   __copy_skel
   __install_crons
+  __install_root_crons
   __configure_root
 }
 
@@ -187,7 +191,12 @@ __gitconfig_nag() {
     "and update your ~/.gitconfig"
 }
 
-__main_basic() {
+__main_cron() {
+  __install_crons
+  __install_root_crons
+}
+
+__main_basic_bash() {
   __copy_skel_bash
 }
 
@@ -204,29 +213,38 @@ __main_darwin() {
 }
 
 __main_mingw64() {
-  __main_basic
+  __main_basic_bash
+}
+
+__main_option_choice() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+      '-b'|'--bash-basic') __main_basic_bash;;
+      '-c'|'--cron') __main_cron;;
+      *) ;;
+    esac
+    shift
+  done
+}
+
+__main_os_choice() {
+  shopt -s nocasematch
+  case $(echo $UNAME | awk -F'_' '{print $1}') in
+    Linux) __main_linux;;
+    Darwin) __main_darwin;;
+    MINGW64) __main_mingw64;;
+    *) log_error "Unsupported system"; return 1;;
+  esac
+  shopt -u nocasematch
 }
 
 main() {
   ! is_debug || log_warn "DEBUG: $TRUE ... Output Only (hopefully)"
-  shopt -s nocasematch
   if [ $# -gt 0 ]; then
-    while [ $# -gt 0 ]; do
-      case $1 in
-        $TRUE) __main_basic;;
-        *) ;;
-      esac
-      shift
-    done
+    __main_option_choice "$@"
   else
-    case $(echo $UNAME | awk -F'_' '{print $1}') in
-      Linux) __main_linux;;
-      Darwin) __main_darwin;;
-      MINGW64) __main_mingw64;;
-      *) log_error "Unsupported system"; return 1;;
-    esac
+    __main_os_choice
   fi
-  shopt -u nocasematch
 }
 
 main "$@"

@@ -1,2 +1,2 @@
-# Daily (At 00:00)
-0 0 * * * PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH" BREWFILE="/Users/Shared/setup/brew/Brewfile" && [ ! -r $BREWFILE ] || cp "$BREWFILE" "${BREWFILE}.$(date +\%u.\%H).bak" && brew bundle dump --file="$BREWFILE" --force >/dev/null 2>&1
+# Daily (At 12:00)
+0 12 * * * PATH="/opt/homebrew/bin:/opt/homebrew/sbin:$PATH" BREWFILE="/Users/Shared/setup/brew/Brewfile" && [ ! -r $BREWFILE ] || cp "$BREWFILE" "${BREWFILE}.$(date +\%u.\%H).bak" && brew bundle dump --file="$BREWFILE" --force >/dev/null 2>&1
