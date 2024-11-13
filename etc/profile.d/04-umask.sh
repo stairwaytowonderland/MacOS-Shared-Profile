@@ -13,7 +13,7 @@ __umask_override() {
   export UMASK=$UMASK_OVERRIDE
 }
 
-_umask_hook() {
+__umask_hook() {
   if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
     for d in $UMASK_OVERRIDE_DIRS; do
       if [ -d "$d" ]; then
@@ -33,4 +33,4 @@ _umask_hook() {
 }
 
 # Append `;` if PROMPT_COMMAND is not empty
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}_umask_hook"
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}__umask_hook"
