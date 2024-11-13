@@ -226,7 +226,7 @@ if [ -n "$force_color_prompt" ]; then
   fi
 fi
 
-# Custom PS1 and PROMPT_COMMAND Handling
+### Custom PS1 and PROMPT_COMMAND Handling
 __ps1_color() {
   local _PS1_OPEN_ESC=$'\001'
   local _PS1_CLOSE_ESC=$'\002'
