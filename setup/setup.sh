@@ -47,16 +47,18 @@ __confirm() {
 }
 
 __create_dir() {
-  local dir="$1" group=staff
-  if [ ! -r "$dir" ] || is_debug ; then
-    if __confirm "Directory '$dir' doesn't exist. Create it?" "y" ; then
-      log_info "Creating dir '$dir'"
-      is_debug || mkdir -p "$dir"
-      if __confirm "Reset group of '$dir' to '$group' (requires sudo)?" ; then
-        log_info "Resetting group of '$dir' to '$group'"
-        is_debug || sudo chown ":${group}" "$dir"
+  local target="$1" group=staff
+  if [ ! -r "$target" ] ; then
+    if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
+      log_info "Creating target '$target'"
+      is_debug || mktarget -p "$target"
+      if __confirm "Reset group of '$target' to '$group' (requires sudo)?" ; then
+        log_info "Resetting group of '$target' to '$group'"
+        is_debug || sudo chown ":${group}" "$target"
       fi
     fi
+  else
+    log_note "The target '$target' already exists."
   fi
 }
 
@@ -73,11 +75,13 @@ __ensure_parent_dir() {
 __create_symlink() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if [ ! -r "$target" ] || is_debug ; then
-      __set_umask
+    if [ ! -r "$target" ] ; then
+      is_debug || __set_umask
       log_info "Creating symlink '$source' => '$target'"
       is_debug || ln -s "$source" "$target"
-      __restore_umask
+      is_debug || __restore_umask
+    else
+      log_note "The target '$target' already exists."
     fi
   fi
 }
@@ -85,11 +89,13 @@ __create_symlink() {
 __copy_file() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if [ ! -r "$target" ] || is_debug ; then
-      __set_umask
+    if [ ! -r "$target" ] ; then
+      is_debug || __set_umask
       log_info "Copying '$source' to '$target'"
       is_debug || cp "$source" "$target"
-      __restore_umask
+      is_debug || __restore_umask
+    else
+      log_note "The target '$target' already exists."
     fi
   fi
 }
