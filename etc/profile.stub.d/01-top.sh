@@ -7,5 +7,5 @@ esac
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
-# If not login shell, cd to home
-shopt login_shell >/dev/null || cd ~
+# cd to home
+shopt login_shell >/dev/null && [ "$PWD" = "$HOME" ] || cd ~

@@ -1,9 +1,20 @@
+# display fancy prompt error/success status, control_c message, and logout message
 FANCY_PROMPT=true
-# PROMPT_COMMAND_ENV_RELOAD=true
-FORCE_COLOR_PROMPT_WINDOWS=true
 
+# show the error code alongside fancy prompt status
+#FANCY_PROMPT_SHOW_ERROR_CODE=true
+
+# reload .env file from 'PROMPT_COMMAND'
+#PROMPT_COMMAND_ENV_RELOAD=true
+
+# set force_color_prompt=true
+#FORCE_COLOR_PROMPT=true
+
+# umask override value for folders specified in UMASK_OVERRIDE_DIRS
 UMASK_OVERRIDE=0002
-# Space separated e.g. '/path/one /path/two /path/three ...'
+
+# UMASK_OVERRIDE_DIRS and UMASK_OVERRIDE_EXCLUDE_DIRS should be
+# space separated, e.g. '/path/one /path/two /path/three ...'
 UMASK_OVERRIDE_DIRS='/Users/Shared'
 UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
