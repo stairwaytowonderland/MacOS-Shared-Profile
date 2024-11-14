@@ -11,9 +11,6 @@ fi
 BASE_DIR="$(dirname $SCRIPT_DIR)"
 UNAME="${UNAME:-$(uname -s)}"
 
-export TRUE=true
-export FALSE=false
-
 [ -r "$BASE_DIR/etc/profile.d/02-functions.sh" ] && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
 # https://specifications.freedesktop.org/basedir-spec/latest/
@@ -130,7 +127,7 @@ __configure_dependencies() {
 }
 
 __copy_skel_bash() {
-  local target="${1:-"$HOME"}" sudo="${2:-$FALSE}" mode="" f=""
+  local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' ! -name '.git*' -exec echo {} \;); do
     $mode __copy_file "$f" "$target/$(basename $f)"
@@ -139,7 +136,7 @@ __copy_skel_bash() {
 }
 
 __copy_skel_git() {
-  local target="${1:-"$HOME"}" sudo="${2:-$FALSE}" mode="" f=""
+  local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.git*' -exec echo {} \;); do
     $mode __copy_file "$f" "$target/$(basename $f)"
@@ -172,7 +169,7 @@ __configure_root() {
       is_debug || sudo chsh -s "$(command -v bash)"
     fi
     if __confirm "Configure 'root' profile?" "y" ; then
-      __copy_skel /var/root "$TRUE"
+      __copy_skel /var/root "true"
     fi
   fi
 }
@@ -241,7 +238,7 @@ __main_os_choice() {
 }
 
 main() {
-  ! is_debug || log_warn "DEBUG: $TRUE ... Output Only (hopefully)"
+  ! is_debug || log_warn "DEBUG is set to 'true' ... Output Only (hopefully)"
   if [ $# -gt 0 ]; then
     __main_option_choice "$@"
   else

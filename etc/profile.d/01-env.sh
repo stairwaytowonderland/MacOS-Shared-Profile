@@ -48,9 +48,6 @@ export BASH_SILENCE_DEPRECATION_WARNING=1
 # https://specifications.freedesktop.org/basedir-spec/latest/
 export XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
 
-export TRUE=true
-export FALSE=false
-
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth

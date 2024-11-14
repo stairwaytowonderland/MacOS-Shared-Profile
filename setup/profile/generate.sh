@@ -16,9 +16,6 @@ UNAME="${UNAME:-$(uname -s)}"
 FILE_NAME=dist/bashrc
 FILE_PATH="${BASE_DIR}/${FILE_NAME}"
 
-export TRUE=true
-export FALSE=false
-
 [ -r "$BASE_DIR/etc/profile.d/02-functions.sh" ] && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
 __generate_profile() {

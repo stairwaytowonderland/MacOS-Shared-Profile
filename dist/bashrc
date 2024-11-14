@@ -108,9 +108,6 @@ export BASH_SILENCE_DEPRECATION_WARNING=1
 # https://specifications.freedesktop.org/basedir-spec/latest/
 export XDG_DATA_HOME=${XDG_DATA_HOME:="$HOME/.local/share"}
 
-export TRUE=true
-export FALSE=false
-
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
@@ -156,9 +153,9 @@ flusherr() { output $?; }
 
 # Fancy Logging
 logmsg() {
-  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-$FALSE}" \
+  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  [ "${color_msg}" = "$TRUE" ] || color_msg="$FALSE"
+  [ "${color_msg}" = "true" ] || color_msg="false"
   case $level in
     info) label_code="${label_code:-94}"; label="${label:-INFO}";;
     warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
@@ -178,27 +175,27 @@ log_error() { logmsg error "$1"; }
 # Boolean Checks
 is_bool() {
   case $1 in
-    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho $TRUE;;
-    *) errcho $FALSE; return 1;;
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho true;;
+    *) errcho false; return 1;;
   esac
 }
 is_true() {
   case $1 in
-    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho $TRUE;;
-    *) errcho $FALSE; return 1;;
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho true;;
+    *) errcho false; return 1;;
   esac
 }
 is_false() {
   local err=0
   is_bool $1 >/dev/null 2>&1 && ! is_true $1 >/dev/null 2>&1 || err=$?
-  [ $err -gt 0 ] && errcho $FALSE && return $err || errcho $TRUE
+  [ $err -gt 0 ] && errcho false && return $err || errcho true
 }
 is() { is_true $1 2>/dev/null || return $?; }
 
 # Value Checks
 is_equal() {
-  local success="${FALSE:-false}"
-  [ "$1" != "$2" ] || success="${TRUE:-true}"
+  local success=false
+  [ "$1" != "$2" ] || success=true
   errcho $success
   $success || return $?
 }
@@ -248,7 +245,7 @@ is_darwin() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "darwin" >/dev/nul
 is_windows() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "mingw64" >/dev/null 2>&1; }
 
 # Other Checks
-is_debug() { is "${DEBUG:-$FALSE}" || return $?; }
+is_debug() { is "${DEBUG:-false}" || return $?; }
 
 # GNU Equivalents
 __realpath() (
