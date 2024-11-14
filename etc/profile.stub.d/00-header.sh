@@ -1,5 +1,5 @@
 ########################################
-# PS1 Reference
+# Bash Prompt Escape Sequence Reference
 # (the below is just an example)
 ########################################
 
