@@ -228,14 +228,16 @@ __main_option_choice() {
 }
 
 __main_os_choice() {
-  shopt -s nocasematch
-  case $(echo $UNAME | awk -F'_' '{print $1}') in
-    Linux) __main_linux;;
-    Darwin) __main_darwin;;
-    MINGW64) __main_mingw64;;
-    *) log_error "Unsupported system"; return 1;;
-  esac
-  shopt -u nocasematch
+  if is_linux ; then
+    __main_linux
+  elif is_darwin ; then
+    __main_darwin
+  elif is_windows ; then
+    __main_mingw64
+  else
+    log_error "Unsupported system"
+    return 1
+  fi
 }
 
 main() {

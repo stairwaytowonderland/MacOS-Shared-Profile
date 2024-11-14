@@ -51,17 +51,48 @@ is_false() {
 is() { is_true $1 2>/dev/null || return $?; }
 
 # Value Checks
-equals() {
+is_equal() {
   local success="${FALSE:-false}"
-  [ "$1" != "$2" ] || success="${TRUE:-true}" && errcho $success
+  [ "$1" != "$2" ] || success="${TRUE:-true}"
+  errcho $success
   $success || return $?
+}
+equals() { is_equal "$@" 2>/dev/null; }
+
+shellos() {
+  test -r /etc/os-release && . /etc/os-release
+  local id="" os="" os_like="" uname="$(uname -s | awk -F'_' '{print $1}')"
+  shopt -s nocasematch
+  case $uname in
+    Linux)
+      test -r /etc/os-release && . /etc/os-release
+      case $ID in
+        ubuntu|rhel)
+          id="$ID"
+          os="$NAME"
+          os_like="$ID_LIKE"
+          ;;
+        *) ;;
+      esac
+      ;;
+    Darwin) os="$uname"; id=macos;;
+    MINGW64) os="Windows"; id=windows;;
+    *) ;;
+  esac
+  shopt -u nocasematch
+  os="${id:+$id|}${os:-$uname}"
+  os_like="${os_like:-$uname}"
+  errcho "${uname}:${os}:${os_like}"
 }
 
 # Shell System Checks
-is_darwin() { uname -s | grep -i Darwin >/dev/null 2>&1 || return $?; }
-is_linux() { uname -s | grep -i Linux >/dev/null 2>&1 || return $?; }
-is_mingw64() { uname -s | grep -i MINGW64 >/dev/null 2>&1 || return $?; }
-is_windows() { is_mingw64 || return $?; }
+is_linux() { equals "$(shellos 2>&1 | awk -F':' '{print $1}')" "Linux"; }
+is_ubuntu() { shellos 2>&1 | awk -F'|' '{print $1}' | awk -F':' '{print $2}' | grep -i "ubuntu" >/dev/null 2>&1; }
+is_rhel() { shellos 2>&1 | awk -F'|' '{print $1}' | awk -F':' '{print $2}' | grep -i "rhel" >/dev/null 2>&1; }
+is_debian() { shellos 2>&1 | awk -F'|' '{print $2}' | awk -F':' '{print $1"."$2}' | grep -i "debian" >/dev/null 2>&1; }
+is_fedora() { shellos 2>&1 | awk -F'|' '{print $2}' | awk -F':' '{print $1"."$2}' | grep -i "fedora" >/dev/null 2>&1; }
+is_darwin() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "darwin" >/dev/null 2>&1; }
+is_windows() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "mingw64" >/dev/null 2>&1; }
 
 # Other Checks
 is_debug() { is "${DEBUG:-$FALSE}" || return $?; }
