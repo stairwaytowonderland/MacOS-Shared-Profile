@@ -7,11 +7,17 @@ FANCY_PROMPT=true
 # reload .env file from 'PROMPT_COMMAND'
 #PROMPT_COMMAND_ENV_RELOAD=true
 
+# force __prompt_command to always be first when setting PROMPT_COMMAND
+#PROMPT_COMMAND_ALWAYS_FIRST=false
+
 # set force_color_prompt=true
 #FORCE_COLOR_PROMPT=true
 
 # umask override value for folders specified in UMASK_OVERRIDE_DIRS
 UMASK_OVERRIDE=0002
+
+# insert new line before umask override status message
+#UMASK_OVERRIDE_DISPLAY_MULTILINE=true
 
 # UMASK_OVERRIDE_DIRS and UMASK_OVERRIDE_EXCLUDE_DIRS should be
 # space separated, e.g. '/path/one /path/two /path/three ...'
@@ -65,9 +71,9 @@ shopt -s checkwinsize
 #shopt -s globstar
 
 # set variable identifying the chroot you work in (used in the prompt below)
-# (for debian-based systems only)
+# (for debian-based systems only; to check: `cat /etc/os-release | grep ID_LIKE | awk -F'=' '{print $2}'`)
 # if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-#     debian_chroot=$(cat /etc/debian_chroot)
+#   debian_chroot=$(cat /etc/debian_chroot)
 # fi
 
 # Load ~/.env if it exists

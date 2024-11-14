@@ -9,7 +9,9 @@ __umask_default() {
 }
 
 __umask_override() {
-  printf "\033[0;2m%s\033[0m: \033[91;2m%s\033[0m=>\033[92;2m%s\033[0m\n" "Overriding default umask" "$UMASK_DEFAULT" "$UMASK_OVERRIDE" >&2
+  local prefix=""
+  ! is "${UMASK_OVERRIDE_DISPLAY_MULTILINE:-false}" || prefix='\n'
+  printf "$prefix\033[0;2m%s\033[0m: \033[91;2m%s\033[0m=>\033[92;2m%s\033[0m\n" "Overriding default umask" "$UMASK_DEFAULT" "$UMASK_OVERRIDE" >&2
   export UMASK=$UMASK_OVERRIDE
 }
 
@@ -33,5 +35,5 @@ __umask_hook() {
 }
 
 # Append `;` if PROMPT_COMMAND is not empty
-PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}__umask_hook"
+PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}"__umask_hook
 __save_prompt_command

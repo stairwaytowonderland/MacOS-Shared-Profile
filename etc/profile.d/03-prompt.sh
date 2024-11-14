@@ -66,6 +66,9 @@ fi
 
 ### Custom PS1 and PROMPT_COMMAND Handling
 
+EXIT=0
+ARGC=0
+ARGV=''
 __save_prompt_command() { _PROMPT_COMMAND=$PROMPT_COMMAND; }
 __save_ps1() { _PS1=$PS1; }
 
@@ -79,7 +82,7 @@ __ps1_color() {
 
 # display last exit code status
 __exit_code_status() {
-  local checkmark=✓ xkmark=✗ checkmark_bold=✔ xmark_bold=✘ arrow_right=➜
+  local checkmark=✓ xmark=✗ checkmark_bold=✔ xmark_bold=✘ arrow_right=➜
   local code="${1:-0}" ps1_prompt_status=""
   if is "${FANCY_PROMPT:-false}" ; then
     if [ -z "$code" -o "$code" = "0" ]; then
@@ -94,7 +97,8 @@ __exit_code_status() {
 }
 
 # display arguments
-__prompt_args() { [ -z "$1" ] || printf "(%s) " "$@"; }
+__prompt_args() { [ $# -eq 0 ] || printf "(%s) " "$@"; }
+__title_status() { local code=${1:-0}; [ $code -eq 0 ] || printf "%s | " $code; }
 
 # reload env
 __prompt_command_env_reload() {
@@ -105,26 +109,34 @@ __prompt_command_env_reload() {
 }
 
 # Main function for updating $PROMPT_COMMAND
-__main_prompt_command() {
+# if using this function to manipulate PS1, this function should always be first when setting PROMPT_COMMAND
+__prompt_command() {
+  # Cache initial exit code to avoid reset from env load
+  local exit=${?##0}
+
+  # load .env file before setting other vars
   __prompt_command_env_reload
+
+  # Hack to always keep exit code up-to-date
+  # TODO: this is needed because PS1_PREFIX seems to reset the error code .. why?
+  EXIT=$exit
 }
 
 # Main function for updating $PS1
-__main_ps1() {
-  local code=${?##0}
-  __exit_code_status $code
+__ps1() {
+  __exit_code_status $EXIT
   __prompt_args "$@"
 }
 
-if is "${PROMPT_COMMAND_FIRST:-true}" ; then
+if is "${PROMPT_COMMAND_ALWAYS_FIRST:-true}" ; then
   # ensure '__prompt_command' is first
   if [ -n "$PROMPT_COMMAND" ]; then
-    PROMPT_COMMAND='__main_prompt_command "$@";'"$PROMPT_COMMAND"
+    PROMPT_COMMAND='__prompt_command "$@";'"$PROMPT_COMMAND"
   else
-    PROMPT_COMMAND='__main_prompt_command "$@"'
+    PROMPT_COMMAND='__prompt_command "$@"'
   fi
 else
-  PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}"'__main_prompt_command "$@"'
+  PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}"'__prompt_command "$@"'
 fi
 __save_prompt_command
 
@@ -137,12 +149,14 @@ if is_linux ; then
 else
   # Use 'parse_hostname' instead of '\h' for advanced customization
   if [ "$color_prompt" = "yes" ]; then
-    PS1="\[\033[01;34m\]\u\[\033[0m\]@\[\033[01;32m\]\$(parse_hostname 100 '-')\[\033[00m\]:\[\033[01;34m\]\w\[\033[0;32m\]\$(parse_git_branch)\[\033[00m\]\$ "
+    PS1='$(__ps1_color $C_BLUE_BOLD)\u$(__ps1_color)@$(__ps1_color $C_GREEN_BOLD)$(parse_hostname 100 '-')$(__ps1_color):$(__ps1_color $C_BLUE_BOLD)\w$(__ps1_color $C_GREEN_BOLD)$(parse_git_branch)$(__ps1_color)\$ '
   else
-    PS1="\u@\$(parse_hostname 10 '-'):\w\$(parse_git_branch)\$ "
+    PS1='\u@$(parse_hostname 100 '-'):\w$(parse_git_branch)\$ '
   fi
 fi
-PS1='$(__main_ps1 "$@")'$PS1
+
+PS1_PREFIX='\[\e]0;$(__title_status $?)$(__prompt_args "$@")\u@$(parse_hostname 100 '-'):\w\a\]'
+PS1=$PS1_PREFIX'$(__ps1 "$@")'$PS1
 __save_ps1
 ###
 

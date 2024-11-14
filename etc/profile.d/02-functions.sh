@@ -7,7 +7,7 @@ is_interactive_mode() {
 # Basic Output
 errcho() { >&2 echo -e "$@"; }
 output() { ! is_interactive_mode || errcho "\033[0;2m$@\033[0m"; }
-showerr() { output $?; }
+flusherr() { output $?; }
 
 # Fancy Logging
 logmsg() {
@@ -61,19 +61,27 @@ equals() { is_equal "$@" 2>/dev/null; }
 
 shellos() {
   test -r /etc/os-release && . /etc/os-release
-  local id="" os="" os_like="" uname="$(uname -s | awk -F'_' '{print $1}')"
+  local uname="$(uname -s | awk -F'_' '{print $1}')"
+  local id="" os="" os_like=""
   shopt -s nocasematch
   case $uname in
     Linux)
-      test -r /etc/os-release && . /etc/os-release
-      case $ID in
-        ubuntu|rhel)
-          id="$ID"
-          os="$NAME"
-          os_like="$ID_LIKE"
-          ;;
-        *) ;;
-      esac
+      # A slightly less targeted (but just as effective) approach is to source the /etc/os-release,
+      # e.g. `test -r /etc/os-release && . /etc/os-release`
+      if test -r /etc/os-release ; then
+        local os_release_vars="ID ID_LIKE NAME"
+        for var in $os_release_vars; do
+          eval "$var="$(cat /etc/os-release | grep "^$var\=.*$" | awk -F'=' '{print $2}')
+        done
+        case $ID in
+          ubuntu|rhel)
+            id="$ID"
+            os="$NAME"
+            os_like="$ID_LIKE"
+            ;;
+          *) ;;
+        esac
+      fi
       ;;
     Darwin) os="$uname"; id=macos;;
     MINGW64) os="Windows"; id=windows;;
