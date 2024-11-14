@@ -48,7 +48,7 @@ __confirm() {
 
 __create_dir() {
   local target="$1" group=staff
-  if [ ! -r "$target" ] ; then
+  if is "${UPDATE:-false}" || [ ! -r "$target" ]; then
     if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
       log_info "Creating target '$target'"
       is_debug || mktarget -p "$target"
@@ -75,7 +75,7 @@ __ensure_parent_dir() {
 __create_symlink() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if [ ! -r "$target" ] ; then
+    if is "${UPDATE:-false}" || [ ! -r "$target" ]; then
       is_debug || __set_umask
       log_info "Creating symlink '$source' => '$target'"
       is_debug || ln -s "$source" "$target"
@@ -89,7 +89,7 @@ __create_symlink() {
 __copy_file() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if [ ! -r "$target" ] ; then
+    if is "${UPDATE:-false}" || [ ! -r "$target" ]; then
       is_debug || __set_umask
       log_info "Copying '$source' to '$target'"
       is_debug || cp "$source" "$target"
@@ -135,8 +135,17 @@ __configure_dependencies() {
 __copy_skel_bash() {
   local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
-  for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' ! -name '.git*' -exec echo {} \;); do
-    $mode __copy_file "$f" "$target/$(basename $f)"
+  for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' ! -name '.env' ! -name '*.env' ! -name '.git*' -exec echo {} \;); do
+    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
+  done
+  unset f
+}
+
+__copy_skel_env() {
+  local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
+  ! is "$sudo" || mode=sudo
+  for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.env' -name '*.env' -exec echo {} \;); do
+    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
   done
   unset f
 }
@@ -145,25 +154,26 @@ __copy_skel_git() {
   local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.git*' -exec echo {} \;); do
-    $mode __copy_file "$f" "$target/$(basename $f)"
+    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
   done
   unset f
 }
 
 __copy_skel() {
-  __copy_skel_bash "$@"
-  __copy_skel_git "$@"
+  UPDATE="${UPDATE:-false}" __copy_skel_bash "$@"
+  UPDATE="${UPDATE:-false}" __copy_skel_env "$@"
+  UPDATE="${UPDATE:-false}" __copy_skel_git "$@"
 }
 
 __install_crons() {
-  if __confirm "Install user crons?" "y" ; then
+  if is "${UPDATE:-false}" || __confirm "Install user crons?" "y" ; then
     log_info "Updating crontab with: $(ls ${BASE_DIR}/cron/{.header,*.cron})"
     is_debug || cat ${BASE_DIR}/cron/{.header,*.cron} | crontab -
   fi
 }
 
 __install_root_crons() {
-  if __confirm "Install root crons (requires sudo)?" ; then
+  if is "${UPDATE:-false}" || __confirm "Install root crons (requires sudo)?" ; then
     printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
     is_debug || cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
   fi
@@ -195,12 +205,20 @@ __gitconfig_nag() {
 }
 
 __main_cron() {
-  __install_crons
-  __install_root_crons
+  UPDATE="${UPDATE:-false}" __install_crons
+  UPDATE="${UPDATE:-false}" __install_root_crons
 }
 
 __main_basic_bash() {
-  __copy_skel_bash
+  UPDATE="${UPDATE:-false}" __copy_skel_bash
+}
+
+__main_env() {
+  UPDATE="${UPDATE:-false}" __copy_skel_env
+}
+
+__main_git() {
+  UPDATE="${UPDATE:-false}" __copy_skel_git
 }
 
 __main_linux() {
@@ -219,11 +237,25 @@ __main_windows() {
   __main_basic_bash
 }
 
+__main_update() {
+  if [ $# -gt 0 ]; then
+    case $1 in
+      'bash') UPDATE=true __main_basic_bash;;
+      'cron') UPDATE=true __main_cron;;
+      'git') UPDATE=true __main_git;;
+      'env') UPDATE=true __main_env;;
+      *) ;;
+    esac
+  fi
+}
+
 __main_option_choice() {
+  local val=""
   while [ $# -gt 0 ]; do
     case $1 in
       '-b'|'--bash-basic') __main_basic_bash;;
       '-c'|'--cron') __main_cron;;
+      '-u'|'--update') __main_update "${2:-""}"; shift;;
       *) ;;
     esac
     shift

@@ -37,6 +37,18 @@ list:
 .install-cron:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --cron'
 
+.update-bash:
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update bash'
+
+.update-env:
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update env'
+
+.update-git:
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update git'
+
+.update-cron:
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update cron'
+
 ####################
 # Custom Public
 ####################
@@ -56,8 +68,20 @@ brew-dump:
 .PHONY: install
 install: .install-full
 
-.PHONY: bash-basic
+.PHONY: install-bash-basic
 install-bash-basic: .install-basic-bash
 
-.PHONY: cron
+.PHONY: install-cron
 install-cron: .install-cron
+
+.PHONY: update-bash
+update-bash: .update-bash
+
+.PHONY: update-env
+update-env: .update-env
+
+.PHONY: update-git
+update-git: .update-git
+
+.PHONY: update-cron
+update-cron: .update-cron

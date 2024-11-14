@@ -74,15 +74,15 @@ shopt login_shell >/dev/null && [ "$PWD" = "$HOME" ] || cd ~
 #FORCE_COLOR_PROMPT=true
 
 # umask override value for folders specified in UMASK_OVERRIDE_DIRS
-UMASK_OVERRIDE=0002
+#UMASK_OVERRIDE=0002
 
 # insert new line before umask override status message
 #UMASK_OVERRIDE_DISPLAY_MULTILINE=true
 
 # UMASK_OVERRIDE_DIRS and UMASK_OVERRIDE_EXCLUDE_DIRS should be
 # space separated, e.g. '/path/one /path/two /path/three ...'
-UMASK_OVERRIDE_DIRS='/Users/Shared'
-UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
+#UMASK_OVERRIDE_DIRS='/Users/Shared'
+#UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
 if [ -r "$HOME/.local/bin/bbeditor" ]; then
   export VISUAL="$HOME/.local/bin/bbeditor"
