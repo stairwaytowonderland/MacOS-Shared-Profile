@@ -14,8 +14,10 @@ UNAME="${UNAME:-$(uname -s)}"
 export TRUE=true
 export FALSE=false
 
-errcho() { >&2 echo $@; }
+# Basic Output
+errcho() { >&2 echo -e "$@"; }
 
+# Fancy Logging
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-$FALSE}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
@@ -36,25 +38,34 @@ log_warn() { logmsg warn "$1"; }
 log_success() { logmsg success "$1"; }
 log_error() { logmsg error "$1"; }
 
+# Boolean Checks
 is_bool() {
   case $1 in
-    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) echo $TRUE >&2;;
-    *) echo $FALSE >&2; return 1;;
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho $TRUE;;
+    *) errcho $FALSE; return 1;;
   esac
 }
 is_true() {
   case $1 in
-    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) echo $TRUE >&2;;
-    *) echo $FALSE >&2; return 1;;
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho $TRUE;;
+    *) errcho $FALSE; return 1;;
   esac
 }
-is_false() { is_bool $1 2>/dev/null && ! is_true $1 2>/dev/null  || return $?; }
-is() { is_true $1 || return $?; }
-equals() {
-  local success="$FALSE"
-  [ "$1" != "$2" ] || success="$TRUE" && echo $success >&2
+is_false() {
+  local err=0
+  is_bool $1 2>/dev/null && ! is_true $1 || err=$?
+  [ $err -gt 0 ] && errcho $FALSE && return $err || errcho $TRUE
+}
+is() { is_true $1 2>/dev/null || return $?; }
+
+# Value Checks
+is_equal() {
+  local success="${FALSE:-false}"
+  [ "$1" != "$2" ] || success="${TRUE:-true}"
+  errcho $success
   $success || return $?
 }
+equals() { is_equal "$@" 2>/dev/null; }
 
 main() {
 
