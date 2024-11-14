@@ -24,13 +24,13 @@ export FALSE=false
 __generate_profile() {
   log_info "Generating profile from parts ..."
   [ -r "${BASE_DIR}/dist" ] || mkdir "${BASE_DIR}/dist"
-  printf "#\n# This file was automatically generated from '%s'\n" $(echo "$0" | sed "s|$HOME|\$HOME|") \
+  printf "#\n# This file was automatically generated from '%s'\n" $(echo "$0" | sed "s|${BASE_DIR}/||") \
     >"$FILE_PATH"
   for f in $(find "${BASE_DIR}/etc/profile.stub.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
     if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/02-pieces.sh" ]; then
       for p in $(find "${BASE_DIR}/etc/profile.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
         log_info "  - Appending '$p'"
-        printf "\n# -- BEGIN -- '%s'\n" $(echo "$p" | sed "s|$HOME|\$HOME|") >>"$FILE_PATH"
+        printf "\n# -- BEGIN -- '%s'\n" $(echo "$p" | sed "s|${BASE_DIR}/||") >>"$FILE_PATH"
         printf "# ------------------------------------------------------------\n" >>"$FILE_PATH"
         cat >>"$FILE_PATH" <"$p"
         printf "# ------------------------------------------------------------\n" >>"$FILE_PATH"

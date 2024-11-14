@@ -1,5 +1,5 @@
 #
-# This file was automatically generated from '$HOME/Shared/setup/profile/generate.sh'
+# This file was automatically generated from 'setup/profile/generate.sh'
 #
 
 # If not running interactively, don't do anything
@@ -14,7 +14,7 @@ esac
 # If not login shell, cd to home
 shopt login_shell >/dev/null || cd ~
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/01-env.sh'
+# -- BEGIN -- 'etc/profile.d/01-env.sh'
 # ------------------------------------------------------------
 FANCY_PROMPT=true
 # PROMPT_COMMAND_ENV_RELOAD=true
@@ -82,7 +82,7 @@ shopt -s checkwinsize
 # ------------------------------------------------------------
 # -- END --
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/02-functions.sh'
+# -- BEGIN -- 'etc/profile.d/02-functions.sh'
 # ------------------------------------------------------------
 # Interactive Mode Check
 is_interactive_mode() {
@@ -197,7 +197,7 @@ command -v realpath >/dev/null || alias realpath='__realpath'
 # ------------------------------------------------------------
 # -- END --
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/03-prompt.sh'
+# -- BEGIN -- 'etc/profile.d/03-prompt.sh'
 # ------------------------------------------------------------
 # define colors for easy reference
 C_DEFAULT=$'\033[00m'; C_BOLD=$'\033[01m'; C_REVERSE=$'\033[07m'
@@ -346,7 +346,7 @@ unset color_prompt force_color_prompt
 # ------------------------------------------------------------
 # -- END --
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/04-umask.sh'
+# -- BEGIN -- 'etc/profile.d/04-umask.sh'
 # ------------------------------------------------------------
 # Record the default umask value on the 1st run
 UMASK_DEFAULT=0022 # $(builtin umask)
@@ -388,7 +388,7 @@ __save_prompt_command
 # ------------------------------------------------------------
 # -- END --
 
-# -- BEGIN -- '$HOME/Shared/etc/profile.d/05-aliases.sh'
+# -- BEGIN -- 'etc/profile.d/05-aliases.sh'
 # ------------------------------------------------------------
 # Standard
 alias ls='ls -G --color=auto'
