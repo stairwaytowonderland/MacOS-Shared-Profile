@@ -8,4 +8,5 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 # Custom
 alias containerfy='cd ~/Tools/containerfy'
-alias pwdr='cd $(realpath)'
+alias pwdr='realpath'
+alias cdr='cd $(realpath)'

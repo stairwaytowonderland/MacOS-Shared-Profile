@@ -34,3 +34,4 @@ __umask_hook() {
 
 # Append `;` if PROMPT_COMMAND is not empty
 PROMPT_COMMAND="${PROMPT_COMMAND:+$PROMPT_COMMAND;}__umask_hook"
+__save_prompt_command

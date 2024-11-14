@@ -1,5 +1,6 @@
-FORCE_COLOR_PROMPT_WINDOWS=true
 FANCY_PROMPT=true
+PROMPT_COMMAND_ENV_RELOAD=true
+FORCE_COLOR_PROMPT_WINDOWS=true
 
 UMASK_OVERRIDE=0002
 # Space separated e.g. '/path/one /path/two /path/three ...'
