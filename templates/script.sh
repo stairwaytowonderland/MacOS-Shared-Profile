@@ -68,7 +68,7 @@ is_equal() {
 equals() { is_equal "$@" 2>/dev/null; }
 
 main() {
-
+  echo "All the things ..."
 }
 
 main "$@"
