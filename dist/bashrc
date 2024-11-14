@@ -131,7 +131,7 @@ is_true() {
 }
 is_false() {
   local err=0
-  is_bool $1 2>/dev/null && ! is_true $1 || err=$?
+  is_bool $1 >/dev/null 2>&1 && ! is_true $1 >/dev/null 2>&1 || err=$?
   [ $err -gt 0 ] && errcho $FALSE && return $err || errcho $TRUE
 }
 is() { is_true $1 2>/dev/null || return $?; }
