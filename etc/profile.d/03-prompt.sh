@@ -28,7 +28,7 @@ load_env() { [ ! -r "$HOME/.env" ] || . "$HOME/.env"; }
 
 # get current git branch
 parse_git_branch() {
-  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+  is "${FANCY_PROMPT:-false}" && git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/' || true
 }
 export -f parse_git_branch
 
@@ -67,8 +67,6 @@ fi
 ### Custom PS1 and PROMPT_COMMAND Handling
 
 EXIT=0
-ARGC=0
-ARGV=''
 __save_prompt_command() { _PROMPT_COMMAND=$PROMPT_COMMAND; }
 __save_ps1() { _PS1=$PS1; }
 
@@ -149,14 +147,14 @@ if is_linux ; then
 else
   # Use 'parse_hostname' instead of '\h' for advanced customization
   if [ "$color_prompt" = "yes" ]; then
-    PS1='$(__ps1_color $C_BLUE_BOLD)\u$(__ps1_color)@$(__ps1_color $C_GREEN_BOLD)$(parse_hostname 100 '-')$(__ps1_color):$(__ps1_color $C_BLUE_BOLD)\w$(__ps1_color $C_GREEN_BOLD)$(parse_git_branch)$(__ps1_color)\$ '
+    PS1='$(__ps1_color $C_BLUE_BOLD)\u$(__ps1_color)@$(__ps1_color $C_GREEN_BOLD)$(parse_hostname 100 '-')$(__ps1_color):$(__ps1_color $C_BLUE_BOLD)\w$(__ps1_color $C_GREEN)$(parse_git_branch)$(__ps1_color)\$ '
   else
     PS1='\u@$(parse_hostname 100 '-'):\w$(parse_git_branch)\$ '
   fi
 fi
 
-PS1_PREFIX='\[\e]0;$(__title_status $?)$(__prompt_args "$@")\u@$(parse_hostname 100 '-'):\w\a\]'
-PS1=$PS1_PREFIX'$(__ps1 "$@")'$PS1
+! is "${FANCY_PROMPT:-false}" || PS1_PREFIX='\[\e]0;$(__title_status $?)$(__prompt_args "$@")\u@$(parse_hostname 100 '-'):\w\a\]'
+PS1=${PS1_PREFIX:-""}'$(__ps1 "$@")'$PS1
 __save_ps1
 ###
 

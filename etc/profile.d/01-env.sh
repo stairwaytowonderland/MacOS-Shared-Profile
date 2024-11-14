@@ -1,5 +1,5 @@
 # display fancy prompt error/success status, control_c message, and logout message
-FANCY_PROMPT=true
+#FANCY_PROMPT=true
 
 # show the error code alongside fancy prompt status
 #FANCY_PROMPT_SHOW_ERROR_CODE=true

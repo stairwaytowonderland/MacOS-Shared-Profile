@@ -59,6 +59,7 @@ is_equal() {
 }
 equals() { is_equal "$@" 2>/dev/null; }
 
+# Shell System Checks
 shellos() {
   test -r /etc/os-release && . /etc/os-release
   local uname="$(uname -s | awk -F'_' '{print $1}')"
@@ -93,7 +94,6 @@ shellos() {
   errcho "${uname}:${os}:${os_like}"
 }
 
-# Shell System Checks
 is_linux() { equals "$(shellos 2>&1 | awk -F':' '{print $1}')" "Linux"; }
 is_ubuntu() { shellos 2>&1 | awk -F'|' '{print $1}' | awk -F':' '{print $2}' | grep -i "ubuntu" >/dev/null 2>&1; }
 is_rhel() { shellos 2>&1 | awk -F'|' '{print $1}' | awk -F':' '{print $2}' | grep -i "rhel" >/dev/null 2>&1; }

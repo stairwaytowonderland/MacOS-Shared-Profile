@@ -32,7 +32,7 @@ list:
 	@bash -cx 'UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh'
 
 .install-basic-bash:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --basic'
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --bash-basic'
 
 .install-cron:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --cron'
@@ -57,7 +57,7 @@ brew-dump:
 install: .install-full
 
 .PHONY: bash-basic
-bash-basic: .install-basic-bash
+install-bash-basic: .install-basic-bash
 
 .PHONY: cron
-cron: .install-cron
+install-cron: .install-cron

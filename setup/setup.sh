@@ -212,7 +212,7 @@ __main_darwin() {
   __gitconfig_nag
 }
 
-__main_mingw64() {
+__main_windows() {
   __main_basic_bash
 }
 
@@ -233,7 +233,7 @@ __main_os_choice() {
   elif is_darwin ; then
     __main_darwin
   elif is_windows ; then
-    __main_mingw64
+    __main_windows
   else
     log_error "Unsupported system"
     return 1
