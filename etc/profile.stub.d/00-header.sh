@@ -36,7 +36,7 @@
 # \$        -The final command line prompt character.
 
 ########################################
-# For more information on PS1 escape sequences, see:
+# For more information on prompt escape sequences, see:
 # https://tldp.org/HOWTO/Bash-Prompt-HOWTO/bash-prompt-escape-sequences.html
 # https://wiki.archlinux.org/title/Bash/Prompt_customization
 ########################################
