@@ -17,7 +17,7 @@ shopt login_shell >/dev/null || cd ~
 # -- BEGIN -- '$HOME/Shared/etc/profile.d/01-env.sh'
 # ------------------------------------------------------------
 FANCY_PROMPT=true
-PROMPT_COMMAND_ENV_RELOAD=true
+# PROMPT_COMMAND_ENV_RELOAD=true
 FORCE_COLOR_PROMPT_WINDOWS=true
 
 UMASK_OVERRIDE=0002
@@ -91,8 +91,9 @@ is_interactive_mode() {
 }
 
 # Basic Output
-output() { ! is_interactive_mode || printf "\033[0;2m%s\033[0m\n" "$@"; }
-errcho() { >&2 echo $@; }
+errcho() { >&2 echo -e "$@"; }
+output() { ! is_interactive_mode || errcho "\033[0;2m$@\033[0m"; }
+showerr() { output $?; }
 
 # Fancy Logging
 logmsg() {
@@ -327,7 +328,7 @@ __umask_default() {
 }
 
 __umask_override() {
-  printf "\033[0;2m%s\033[0m: \033[91;2m%s\033[0m=>\033[92;2m%s\033[0m\n" "Overriding default umask" "$UMASK_DEFAULT" "$UMASK_OVERRIDE"
+  printf "\033[0;2m%s\033[0m: \033[91;2m%s\033[0m=>\033[92;2m%s\033[0m\n" "Overriding default umask" "$UMASK_DEFAULT" "$UMASK_OVERRIDE" >&2
   export UMASK=$UMASK_OVERRIDE
 }
 

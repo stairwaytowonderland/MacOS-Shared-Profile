@@ -5,8 +5,9 @@ is_interactive_mode() {
 }
 
 # Basic Output
-output() { ! is_interactive_mode || printf "\033[0;2m%s\033[0m\n" "$@"; }
-errcho() { >&2 echo $@; }
+errcho() { >&2 echo -e "$@"; }
+output() { ! is_interactive_mode || errcho "\033[0;2m$@\033[0m"; }
+showerr() { output $?; }
 
 # Fancy Logging
 logmsg() {
