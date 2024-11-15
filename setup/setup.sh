@@ -161,8 +161,8 @@ __copy_skel_git() {
 
 __copy_skel() {
   UPDATE="${UPDATE:-false}" __copy_skel_bash "$@"
-  UPDATE="${UPDATE:-false}" __copy_skel_env "$@"
   UPDATE="${UPDATE:-false}" __copy_skel_git "$@"
+  UPDATE="${UPDATE:-false}" __copy_skel_env "$@"
 }
 
 __install_crons() {
@@ -181,20 +181,20 @@ __install_root_crons() {
 
 __configure_root() {
   if __confirm "Configure 'root' user (requires sudo)?" "n" ; then
-    if __confirm "Configure 'root' shell ($(command -v bash))?" "y" ; then
+    if UPDATE="${UPDATE:-false}" || __confirm "Configure 'root' shell ($(command -v bash))?" "y" ; then
       is_debug || sudo chsh -s "$(command -v bash)"
     fi
-    if __confirm "Configure 'root' profile?" "y" ; then
+    if UPDATE="${UPDATE:-false}" || __confirm "Configure 'root' profile?" "y" ; then
       __copy_skel /var/root "true"
     fi
   fi
 }
 
 __configure_profiles() {
-  __copy_skel
-  __install_crons
-  __install_root_crons
-  __configure_root
+  UPDATE="${UPDATE:-false}" __copy_skel
+  UPDATE="${UPDATE:-false}" __install_crons
+  UPDATE="${UPDATE:-false}" __install_root_crons
+  UPDATE="${UPDATE:-false}" __configure_root
 }
 
 __gitconfig_nag() {
@@ -204,13 +204,32 @@ __gitconfig_nag() {
     "and update your ~/.gitconfig"
 }
 
-__main_cron() {
-  UPDATE="${UPDATE:-false}" __install_crons
-  UPDATE="${UPDATE:-false}" __install_root_crons
+__git_commit() {
+  local targets="$@" target=""
+  local message="Updating skel files ..."
+  git init "$HOME"
+  for f in $targets; do
+    target="${HOME}/$(basename $f)"
+    message=$(cat <<EOF
+$message
+  - $f
+EOF
+)
+    log_info "Staging '$target'"
+    is_debug || git -C "$HOME" add "${HOME}/$(basename $f)" 2>/dev/null || true
+    unset target
+  done
+  log_success "Committing with message: '$message'"
+  is_debug || git -C "$HOME" commit -m "$message" 2>/dev/null || true
 }
 
 __main_basic_bash() {
   UPDATE="${UPDATE:-false}" __copy_skel_bash
+}
+
+__main_cron() {
+  UPDATE="${UPDATE:-false}" __install_crons
+  UPDATE="${UPDATE:-false}" __install_root_crons
 }
 
 __main_env() {
@@ -219,6 +238,10 @@ __main_env() {
 
 __main_git() {
   UPDATE="${UPDATE:-false}" __copy_skel_git
+}
+
+__main_root() {
+  UPDATE="${UPDATE:-false}" __configure_root
 }
 
 __main_linux() {
@@ -240,10 +263,12 @@ __main_windows() {
 __main_update() {
   if [ $# -gt 0 ]; then
     case $1 in
+      'all') UPDATE=true __configure_profiles;;
       'bash') UPDATE=true __main_basic_bash;;
       'cron') UPDATE=true __main_cron;;
-      'git') UPDATE=true __main_git;;
       'env') UPDATE=true __main_env;;
+      'git') UPDATE=true __main_git;;
+      'root') UPDATE=true __main_root;;
       *) ;;
     esac
   fi
@@ -254,6 +279,7 @@ __main_option_choice() {
     case $1 in
       '-b'|'--bash-basic') __main_basic_bash;;
       '-c'|'--cron') __main_cron;;
+      '-g'|'--git') shift; __git_commit "$@";;
       '-u'|'--update') __main_update "${2:-""}"; shift;;
       *) ;;
     esac

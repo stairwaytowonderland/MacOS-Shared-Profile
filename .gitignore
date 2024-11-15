@@ -25,6 +25,7 @@
 # Include
 !.editorconfig
 !.gitignore
+!**/.gitignore
 
 !/config/**/*.jpg
 !/config/**/*.zip

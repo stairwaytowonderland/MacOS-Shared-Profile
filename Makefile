@@ -3,6 +3,7 @@
 UNAME := $(shell uname -s)
 SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 BREWFILE := "$(SCRIPT_DIR)/setup/brew/Brewfile"
+SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
 
 ####################
 # Standard Public
@@ -25,29 +26,45 @@ list:
 # Hidden Helpers
 ####################
 
+.PHONY: .list-targets
 .list-targets:
 	@LC_ALL=C $(MAKE) -pRrq -f $(firstword $(MAKEFILE_LIST)) : 2>/dev/null | awk -v RS= -F: '/(^|\n)# Files(\n|$$)/,/(^|\n)# Finished Make data base/ {if ($$1 !~ "^[#.]") {print $$1}}' | sort
 
+.PHONY: .install-full
 .install-full:
 	@bash -cx 'UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh'
 
+.PHONY: .install-basic-bash
 .install-basic-bash:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --bash-basic'
 
+.PHONY: .install-cron
 .install-cron:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --cron'
 
+.PHONY: .update-bash
 .update-bash:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update bash'
 
+.PHONY: .update-env
 .update-env:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update env'
 
+.PHONY: .update-git
 .update-git:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update git'
 
+.PHONY: .update-cron
 .update-cron:
 	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update cron'
+
+.PHONY: .update
+.update: .git
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update all'
+
+.PHONY: .git
+.git:
+	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --git $(SKEL_FILES)'
 
 ####################
 # Custom Public
@@ -85,3 +102,9 @@ update-git: .update-git
 
 .PHONY: update-cron
 update-cron: .update-cron
+
+.PHONY: update
+update: .update
+
+.PHONY: git
+git: .git

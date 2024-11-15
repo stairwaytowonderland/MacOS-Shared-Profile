@@ -1,0 +1,10 @@
+# Exclude all by default
+*
+
+# Include only the following
+!/.gitignore
+!/.bash_profile
+!/.bashrc
+!/.env
+!/.gitconfig
+!/.profile
