@@ -283,15 +283,15 @@ __main_git() {
   done
 }
 
-__main_update() {
+__main_install() {
   if [ $# -gt 0 ]; then
     case $1 in
-      'all') UPDATE=true __configure_profiles;;
-      'bash') UPDATE=true __handle_basic_bash;;
-      'cron') UPDATE=true __handle_cron;;
-      'env') UPDATE=true __handle_env;;
-      'git') UPDATE=true __handle_git;;
-      'root') UPDATE=true __handle_root;;
+      'all') UPDATE="${UPDATE:-false}" __configure_profiles;;
+      'bash') UPDATE="${UPDATE:-false}" __handle_basic_bash;;
+      'cron') UPDATE="${UPDATE:-false}" __handle_cron;;
+      'env') UPDATE="${UPDATE:-false}" __handle_env;;
+      'git') UPDATE="${UPDATE:-false}" __handle_git;;
+      'root') UPDATE="${UPDATE:-false}" __handle_root;;
       *) ;;
     esac
   fi
@@ -300,11 +300,11 @@ __main_update() {
 __main_option_choice() {
   while [ $# -gt 0 ]; do
     case $1 in
-      '-b'|'--bash-basic') __handle_basic_bash;;
+      '-b'|'--build') __handle_build;;
       '-c'|'--cron') __handle_cron;;
       '-g'|'--git') shift; __main_git "$@";;
-      '-u'|'--update') __main_update "${2:-""}"; shift;;
-      '-l'|'--build') __handle_build;;
+      '-i'|'--install') __main_install "${2:-""}"; shift;;
+      '-u'|'--update') UPDATE=true __main_install "${2:-""}"; shift;;
       *) ;;
     esac
     shift

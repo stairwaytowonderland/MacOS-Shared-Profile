@@ -4,6 +4,7 @@
 # Global Variables
 ####################
 
+SHELL := bash
 UNAME = $(shell uname -s)
 SCRIPT_DIR = $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 
@@ -14,7 +15,7 @@ SCRIPT_DIR = $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 .PHONY: all
 all: $(TARGETS)
 	@printf "\033[1m%s\033[0m\n" "Please specify additional targets"
-	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n4 printf "%-25s%-25s%-25s%s\n"
+	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n3 printf "%-25s%-25s%-25s%s\n"
 
 .PHONY: help
 help:
@@ -22,7 +23,7 @@ help:
 
 .PHONY: list
 list:
-	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n4 printf "%-25s%-25s%-25s%s\n"
+	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n3 printf "%-25s%-25s%-25s%s\n"
 
 ####################
 # Helpers
@@ -34,49 +35,57 @@ list:
 
 .PHONY: .install-full
 .install-full:
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh'
+	@set -x DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh
 
 .PHONY: .install-basic-bash
 .install-basic-bash:
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --bash-basic'
+	@set -x DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --install bash
+
+.PHONY: .install-env
+.install-env:
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --install env
+
+.PHONY: .install-git
+.install-git:
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --install git
 
 .PHONY: .install-cron
 .install-cron:
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --cron'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --cron
 
 .PHONY: .update-bash
 .update-bash: skel-commit
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update bash'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update bash
 
 .PHONY: .update-env
 .update-env: skel-commit
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update env'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update env
 
 .PHONY: .update-git
 .update-git: skel-commit
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update git'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update git
 
 .PHONY: .update-cron
 .update-cron:
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update cron'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update cron
 
 .PHONY: .update
 .update: skel-commit
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update all'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update all
 
 .PHONY: .skel-commit
 .skel-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
 .skel-commit:
-	@bash -cx 'BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)'
+	@set -x; BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)
 
 .PHONY: .skel-status
 .skel-status: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
 .skel-status:
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git status'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git status
 
 .PHONY: .build
 .build:
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --build'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --build
 
 .PHONY: .deploy
 .deploy: update-skel
@@ -114,24 +123,37 @@ test-deploy: deploy
 
 .PHONY: combined-profile
 combined-profile:
-	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/profile/generate.sh'
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/profile/generate.sh
 
 .PHONY: bbedit-default-editor
 bbedit-default-editor:
-	@bash -cx '$(SCRIPT_DIR)/setup/bbedit/bbedit-default-editor'
+	@set -x; '$(SCRIPT_DIR)/setup/bbedit/bbedit-default-editor'
 
 .PHONY: brew-dump
 brew-dump: BREWFILE = "$(SCRIPT_DIR)/setup/brew/Brewfile"
 brew-dump:
-	@bash -cx '[ ! -r $(BREWFILE) ] || cp "$(BREWFILE)" "$(BREWFILE).$(shell date +\%u.\%H).bak" && brew bundle dump --file="$(BREWFILE)" --force'
+	@set -x; [ ! -r $(BREWFILE) ] || cp "$(BREWFILE)" "$(BREWFILE).$(shell date +\%u.\%H).bak" && brew bundle dump --file="$(BREWFILE)" --force
 
 ### Install
 
 .PHONY: install-bash-basic
 install-bash-basic: .install-basic-bash
 
+.PHONY: install-env
+install-env: .install-env
+
+.PHONY: install-git
+install-git: .install-git
+
 .PHONY: install-cron
 install-cron: .install-cron
+
+.PHONY: install-skel
+install-skel: install-bash-basic install-env install-git
+
+.PHONY: test-install-skel
+test-install-skel: DEBUG=true
+test-install-skel: install-skel
 
 ### Update
 
@@ -148,7 +170,11 @@ update-git: .update-git
 update-cron: .update-cron
 
 .PHONY: update-skel
-update-skel: update-bash update-env update-git
+update-skel: skel-commit update-bash update-env update-git
+
+.PHONY: test-update-skel
+test-update-skel: DEBUG=true
+test-update-skel: update-skel
 
 ### Maintain
 

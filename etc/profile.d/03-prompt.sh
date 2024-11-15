@@ -7,7 +7,6 @@ C_BLUE_BOLD=$'\033[01;34m'; C_PURPLE_BOLD=$'\033[01;35m'; C_CYAN_BOLD=$'\033[01;
 
 # friendly logout message
 quit() { printf "🤖 %s 🤖\n" "Klaatu barada nikto"; }
-trap quit EXIT
 
 # 🚨 control_c handling
 control_c() {

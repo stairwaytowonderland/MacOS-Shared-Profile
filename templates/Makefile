@@ -4,6 +4,7 @@
 # Global Variables
 ####################
 
+SHELL := bash
 UNAME := $(shell uname -s)
 SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 
@@ -14,7 +15,7 @@ SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 .PHONY: all
 all: $(TARGETS)
 	@printf "\033[1m%s\033[0m\n" "Please specify additional targets"
-	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n4 printf "%-25s%-25s%-25s%s\n"
+	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n3 printf "%-25s%-25s%-25s%s\n"
 
 .PHONY: help
 help:
@@ -22,7 +23,7 @@ help:
 
 .PHONY: list
 list:
-	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n4 printf "%-25s%-25s%-25s%s\n"
+	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n3 printf "%-25s%-25s%-25s%s\n"
 
 ####################
 # Helpers
@@ -34,7 +35,7 @@ list:
 
 .PHONY: .install
 .install:
-	@bash -cx 'DEBUG=$(DEBUG) SCRIPT_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/script.sh'
+	@set -x; 'DEBUG=$(DEBUG) SCRIPT_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/script.sh'
 
 ####################
 # Common
