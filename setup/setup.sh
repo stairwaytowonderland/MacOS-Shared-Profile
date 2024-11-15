@@ -250,7 +250,6 @@ __main_update() {
 }
 
 __main_option_choice() {
-  local val=""
   while [ $# -gt 0 ]; do
     case $1 in
       '-b'|'--bash-basic') __main_basic_bash;;
