@@ -1,12 +1,14 @@
 # MAKEFLAGS += --no-print-directory
 
-UNAME := $(shell uname -s)
-SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
-BREWFILE := "$(SCRIPT_DIR)/setup/brew/Brewfile"
-SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+####################
+# Global Variables
+####################
+
+UNAME = $(shell uname -s)
+SCRIPT_DIR = $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 
 ####################
-# Standard Public
+# Standard
 ####################
 
 .PHONY: all
@@ -23,7 +25,7 @@ list:
 	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
 
 ####################
-# Hidden Helpers
+# Helpers
 ####################
 
 .PHONY: .list-targets
@@ -32,64 +34,86 @@ list:
 
 .PHONY: .install-full
 .install-full:
-	@bash -cx 'UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh'
 
 .PHONY: .install-basic-bash
 .install-basic-bash:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --bash-basic'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --bash-basic'
 
 .PHONY: .install-cron
 .install-cron:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --cron'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --cron'
 
 .PHONY: .update-bash
 .update-bash:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update bash'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update bash'
 
 .PHONY: .update-env
 .update-env:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update env'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update env'
 
 .PHONY: .update-git
 .update-git:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update git'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update git'
 
 .PHONY: .update-cron
 .update-cron:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update cron'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update cron'
 
 .PHONY: .update
-.update: .git
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --update all'
+.update:
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update all'
 
-.PHONY: .git
-.git:
-	@bash -cx '$(SCRIPT_DIR)/setup/setup.sh --git $(SKEL_FILES)'
+.PHONY: .git-commit
+.git-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.git-commit:
+	@bash -cx 'BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)'
+
+.PHONY: .git-status
+.git-status: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.git-status:
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git status'
 
 ####################
-# Custom Public
+# Common
+####################
+
+.PHONY: install
+install: .install-full
+
+.PHONY: test
+test: DEBUG = true
+test: .install-full
+
+.PHONY: update
+update: .update
+
+####################
+# Misc
 ####################
 
 .PHONY: combined-profile
 combined-profile:
-	@bash -cx '$(SCRIPT_DIR)/setup/profile/generate.sh'
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/profile/generate.sh'
 
 .PHONY: bbedit-default-editor
 bbedit-default-editor:
 	@bash -cx '$(SCRIPT_DIR)/setup/bbedit/bbedit-default-editor'
 
 .PHONY: brew-dump
+brew-dump: BREWFILE = "$(SCRIPT_DIR)/setup/brew/Brewfile"
 brew-dump:
 	@bash -cx '[ ! -r $(BREWFILE) ] || cp "$(BREWFILE)" "$(BREWFILE).$(shell date +\%u.\%H).bak" && brew bundle dump --file="$(BREWFILE)" --force'
 
-.PHONY: install
-install: .install-full
+### Install
 
 .PHONY: install-bash-basic
 install-bash-basic: .install-basic-bash
 
 .PHONY: install-cron
 install-cron: .install-cron
+
+### Update
 
 .PHONY: update-bash
 update-bash: .update-bash
@@ -103,8 +127,14 @@ update-git: .update-git
 .PHONY: update-cron
 update-cron: .update-cron
 
-.PHONY: update
-update: .update
+### Maintain
 
-.PHONY: git
-git: .git
+.PHONY: git-commit
+git-commit: .git-commit
+
+.PHONY: test-git-commit
+test-git-commit: DEBUG = true
+test-git-commit: .git-commit
+
+.PHONY: git-status
+git-status: .git-status

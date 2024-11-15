@@ -1,27 +1,31 @@
 # MAKEFLAGS += --no-print-directory
 
+####################
+# Global Variables
+####################
+
 UNAME := $(shell uname -s)
 SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 
 ####################
-# Standard Public
+# Standard
 ####################
 
 .PHONY: all
 all: $(TARGETS)
 	@printf "\033[1m%s\033[0m\n" "Please specify additional targets"
-	@LC_ALL=C $(MAKE) list | sed -E 's/^all ?//' | sort -u | xargs
+	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs
 
 .PHONY: help
 help:
-	@LC_ALL=C $(MAKE)
+	@LC_ALL=C $(MAKE) .list-targets
 
 .PHONY: list
 list:
 	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
 
 ####################
-# Hidden Helpers
+# Helpers
 ####################
 
 .PHONY: .list-targets
@@ -30,11 +34,15 @@ list:
 
 .PHONY: .install
 .install:
-	@bash -cx '$(SCRIPT_DIR)/script.sh'
+	@bash -cx 'DEBUG=$(DEBUG) SCRIPT_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/script.sh'
 
 ####################
-# Custom Public
+# Common
 ####################
 
 .PHONY: install
 install: .install
+
+.PHONY: test
+test: DEBUG = true
+test: .install

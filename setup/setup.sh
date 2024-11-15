@@ -8,17 +8,16 @@ else
   SCRIPT_DIR="$(pwd)"
 fi
 
-BASE_DIR="$(dirname $SCRIPT_DIR)"
+BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
 
 [ -r "$BASE_DIR/etc/profile.d/02-functions.sh" ] && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
 # https://specifications.freedesktop.org/basedir-spec/latest/
 XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
+
 # Record the default umask value
-UMASK_DEFAULT=0022
-# Record the current umask value
-UMASK_RESTORE=$(builtin umask)
+UMASK=$(builtin umask)
 
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
@@ -32,8 +31,8 @@ install_brewfile() {
   is_debug || brew bundle --file="$target"
 }
 
-__set_umask() { umask $UMASK_DEFAULT; }
-__restore_umask() { umask $UMASK_RESTORE; }
+__set_umask() { umask 0022; }
+__restore_umask() { umask $UMASK; }
 
 __confirm() {
   [ -n "${1:-""}" ] || return
@@ -223,52 +222,68 @@ EOF
   is_debug || git -C "$HOME" commit -m "$message" 2>/dev/null || true
 }
 
-__main_basic_bash() {
+__git_status() {
+  log_success "Retrieving \`git status\` from '$HOME'"
+  is_debug || git -C "$HOME" status 2>/dev/null || true
+}
+
+__handle_basic_bash() {
   UPDATE="${UPDATE:-false}" __copy_skel_bash
 }
 
-__main_cron() {
+__handle_cron() {
   UPDATE="${UPDATE:-false}" __install_crons
   UPDATE="${UPDATE:-false}" __install_root_crons
 }
 
-__main_env() {
+__handle_env() {
   UPDATE="${UPDATE:-false}" __copy_skel_env
 }
 
-__main_git() {
+__handle_git() {
   UPDATE="${UPDATE:-false}" __copy_skel_git
 }
 
-__main_root() {
+__handle_root() {
   UPDATE="${UPDATE:-false}" __configure_root
 }
 
-__main_linux() {
+__handle_linux() {
   __configure_dependencies
   __configure_profiles
   __gitconfig_nag
 }
 
-__main_darwin() {
+__handle_darwin() {
   __configure_dependencies
   __configure_profiles
   __gitconfig_nag
 }
 
-__main_windows() {
-  __main_basic_bash
+__handle_windows() {
+  __handle_basic_bash
+}
+
+__main_git() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+      'commit') shift; __git_commit "$@";;
+      'status') __git_status;;
+      *) ;;
+    esac
+    shift
+  done
 }
 
 __main_update() {
   if [ $# -gt 0 ]; then
     case $1 in
       'all') UPDATE=true __configure_profiles;;
-      'bash') UPDATE=true __main_basic_bash;;
-      'cron') UPDATE=true __main_cron;;
-      'env') UPDATE=true __main_env;;
-      'git') UPDATE=true __main_git;;
-      'root') UPDATE=true __main_root;;
+      'bash') UPDATE=true __handle_basic_bash;;
+      'cron') UPDATE=true __handle_cron;;
+      'env') UPDATE=true __handle_env;;
+      'git') UPDATE=true __handle_git;;
+      'root') UPDATE=true __handle_root;;
       *) ;;
     esac
   fi
@@ -277,9 +292,9 @@ __main_update() {
 __main_option_choice() {
   while [ $# -gt 0 ]; do
     case $1 in
-      '-b'|'--bash-basic') __main_basic_bash;;
-      '-c'|'--cron') __main_cron;;
-      '-g'|'--git') shift; __git_commit "$@";;
+      '-b'|'--bash-basic') __handle_basic_bash;;
+      '-c'|'--cron') __handle_cron;;
+      '-g'|'--git') shift; __main_git "$@";;
       '-u'|'--update') __main_update "${2:-""}"; shift;;
       *) ;;
     esac
@@ -289,11 +304,11 @@ __main_option_choice() {
 
 __main_os_choice() {
   if is_linux ; then
-    __main_linux
+    __handle_linux
   elif is_darwin ; then
-    __main_darwin
+    __handle_darwin
   elif is_windows ; then
-    __main_windows
+    __handle_windows
   else
     log_error "Unsupported system"
     return 1

@@ -8,20 +8,19 @@ else
   SCRIPT_DIR="$(pwd)"
 fi
 
-BASE_DIR="$(dirname $SCRIPT_DIR)"
+BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
 
-export TRUE=true
-export FALSE=false
-
 # Basic Output
+
 errcho() { >&2 echo -e "$@"; }
 
 # Fancy Logging
+
 logmsg() {
-  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-$FALSE}" \
+  local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  [ "${color_msg}" = "$TRUE" ] || color_msg="$FALSE"
+  [ "${color_msg}" = "true" ] || color_msg=false
   case $level in
     info) label_code="${label_code:-94}"; label="${label:-INFO}";;
     warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
@@ -39,26 +38,28 @@ log_success() { logmsg success "$1"; }
 log_error() { logmsg error "$1"; }
 
 # Boolean Checks
+
 is_bool() {
   case $1 in
-    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho $TRUE;;
-    *) errcho $FALSE; return 1;;
+    y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho true;;
+    *) errcho false; return 1;;
   esac
 }
 is_true() {
   case $1 in
-    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho $TRUE;;
-    *) errcho $FALSE; return 1;;
+    y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho true;;
+    *) errcho false; return 1;;
   esac
 }
 is_false() {
   local err=0
   is_bool $1 2>/dev/null && ! is_true $1 || err=$?
-  [ $err -gt 0 ] && errcho $FALSE && return $err || errcho $TRUE
+  [ $err -gt 0 ] && errcho false && return $err || errcho true
 }
 is() { is_true $1 2>/dev/null || return $?; }
 
 # Value Checks
+
 is_equal() {
   local success="${FALSE:-false}"
   [ "$1" != "$2" ] || success="${TRUE:-true}"
@@ -67,8 +68,25 @@ is_equal() {
 }
 equals() { is_equal "$@" 2>/dev/null; }
 
+# Main Handlers
+
+__main_option_choice() {
+  while [ $# -gt 0 ]; do
+    case $1 in
+      '-o'|'--option') shift; printf "\033[4mArgs\033[0m\n"; printf "\t- %s\n" "$@";;
+      *) ;;
+    esac
+    shift
+  done
+}
+
+# Main
+
 main() {
-  echo "All the things ..."
+  log_success "Running '$0'"
+  if [ $# -gt 0 ]; then
+    __main_option_choice "$@"
+  fi
 }
 
 main "$@"
