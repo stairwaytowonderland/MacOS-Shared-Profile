@@ -45,15 +45,15 @@ list:
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --cron'
 
 .PHONY: .update-bash
-.update-bash:
+.update-bash: skel-commit
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update bash'
 
 .PHONY: .update-env
-.update-env:
+.update-env: skel-commit
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update env'
 
 .PHONY: .update-git
-.update-git:
+.update-git: skel-commit
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update git'
 
 .PHONY: .update-cron
@@ -61,19 +61,24 @@ list:
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update cron'
 
 .PHONY: .update
-.update:
+.update: skel-commit
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update all'
 
-.PHONY: .git-commit
-.git-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
-.git-commit:
+.PHONY: .skel-commit
+.skel-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.skel-commit:
 	@bash -cx 'BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)'
 
-.PHONY: .git-status
-.git-status: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
-.git-status:
+.PHONY: .skel-status
+.skel-status: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.skel-status:
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git status'
 
+.PHONY: .build
+.build: combined-profile
+
+.PHONY: .deploy
+.deploy: update-skel
 ####################
 # Common
 ####################
@@ -87,6 +92,12 @@ test: .install-full
 
 .PHONY: update
 update: .update
+
+.PHONY: build
+build: .build
+
+.PHONY: deploy
+deploy: .deploy
 
 ####################
 # Misc
@@ -127,14 +138,17 @@ update-git: .update-git
 .PHONY: update-cron
 update-cron: .update-cron
 
+.PHONY: update-skel
+update-skel: update-bash update-env update-git
+
 ### Maintain
 
-.PHONY: git-commit
-git-commit: .git-commit
+.PHONY: skel-commit
+skel-commit: .skel-commit
 
-.PHONY: test-git-commit
-test-git-commit: DEBUG = true
-test-git-commit: .git-commit
+.PHONY: test-skel-commit
+test-skel-commit: DEBUG = true
+test-skel-commit: .skel-commit
 
-.PHONY: git-status
-git-status: .git-status
+.PHONY: skel-status
+skel-status: .skel-status
