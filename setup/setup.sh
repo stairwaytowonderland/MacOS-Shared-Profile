@@ -248,6 +248,14 @@ __handle_root() {
   UPDATE="${UPDATE:-false}" __configure_root
 }
 
+__handle_build() {
+  DEBUG=true UPDATE="${UPDATE:-false}" __copy_skel "${BASE_DIR}/dist"
+}
+
+__handle_deploy() {
+  echo "__handle_deploy"
+}
+
 __handle_linux() {
   __configure_dependencies
   __configure_profiles
@@ -296,6 +304,7 @@ __main_option_choice() {
       '-c'|'--cron') __handle_cron;;
       '-g'|'--git') shift; __main_git "$@";;
       '-u'|'--update') __main_update "${2:-""}"; shift;;
+      '-l'|'--build') __handle_build;;
       *) ;;
     esac
     shift

@@ -14,15 +14,15 @@ SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 .PHONY: all
 all: $(TARGETS)
 	@printf "\033[1m%s\033[0m\n" "Please specify additional targets"
-	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs
+	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n4 printf "%-25s%-25s%-25s%s\n"
 
 .PHONY: help
 help:
-	@LC_ALL=C $(MAKE) .list-targets
+	@LC_ALL=C $(MAKE) .list-targets | xargs -n4 printf "%-25s%-25s%-25s%s\n"
 
 .PHONY: list
 list:
-	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
+	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n4 printf "%-25s%-25s%-25s%s\n"
 
 ####################
 # Helpers
@@ -45,4 +45,4 @@ install: .install
 
 .PHONY: test
 test: DEBUG = true
-test: .install
+test: install

@@ -14,15 +14,15 @@ SCRIPT_DIR = $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 .PHONY: all
 all: $(TARGETS)
 	@printf "\033[1m%s\033[0m\n" "Please specify additional targets"
-	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs
+	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n4 printf "%-25s%-25s%-25s%s\n"
 
 .PHONY: help
 help:
-	@LC_ALL=C $(MAKE) .list-targets
+	@LC_ALL=C $(MAKE) .list-targets | xargs -n4 printf "%-25s%-25s%-25s%s\n"
 
 .PHONY: list
 list:
-	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$'
+	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n4 printf "%-25s%-25s%-25s%s\n"
 
 ####################
 # Helpers
@@ -75,7 +75,8 @@ list:
 	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git status'
 
 .PHONY: .build
-.build: combined-profile
+.build:
+	@bash -cx 'DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --build'
 
 .PHONY: .deploy
 .deploy: update-skel
@@ -88,16 +89,24 @@ install: .install-full
 
 .PHONY: test
 test: DEBUG = true
-test: .install-full
+test: install
 
 .PHONY: update
 update: .update
 
 .PHONY: build
-build: .build
+build: .build combined-profile
+
+.PHONY: test-build
+test-build: DEBUG = true
+test-build: build
 
 .PHONY: deploy
 deploy: .deploy
+
+.PHONY: test-deploy
+test-deploy: DEBUG = true
+test-deploy: deploy
 
 ####################
 # Misc
@@ -148,7 +157,7 @@ skel-commit: .skel-commit
 
 .PHONY: test-skel-commit
 test-skel-commit: DEBUG = true
-test-skel-commit: .skel-commit
+test-skel-commit: skel-commit
 
 .PHONY: skel-status
 skel-status: .skel-status
