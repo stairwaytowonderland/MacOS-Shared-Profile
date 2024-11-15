@@ -10,7 +10,7 @@ else
   SCRIPT_DIR="$(pwd)"
 fi
 
-BASE_DIR="$(dirname $(dirname $SCRIPT_DIR))"
+BASE_DIR="${BASE_DIR:-$(dirname $(dirname $SCRIPT_DIR))}"
 UNAME="${UNAME:-$(uname -s)}"
 
 FILE_NAME=dist/bashrc
