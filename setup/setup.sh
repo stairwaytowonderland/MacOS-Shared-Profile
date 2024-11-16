@@ -50,7 +50,7 @@ __create_dir() {
   if is "${UPDATE:-false}" || [ ! -r "$target" ]; then
     if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
       log_info "Creating target '$target'"
-      is_debug || mktarget -p "$target"
+      is_debug || mkdir -p "$target"
       if __confirm "Reset group of '$target' to '$group' (requires sudo)?" ; then
         log_info "Resetting group of '$target' to '$group'"
         is_debug || sudo chown ":${group}" "$target"
@@ -164,6 +164,15 @@ __copy_skel() {
   UPDATE="${UPDATE:-false}" __copy_skel_env "$@"
 }
 
+__copy_dist() {
+  local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
+  ! is "$sudo" || mode=sudo
+  for f in $(find "${BASE_DIR}/dist" -mindepth 1 -type f -name '.*' -exec echo {} \;); do
+    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
+  done
+  unset f
+}
+
 __install_crons() {
   if is "${UPDATE:-false}" || __confirm "Install user crons?" "y" ; then
     log_info "Updating crontab with: $(ls ${BASE_DIR}/cron/{.header,*.cron})"
@@ -249,11 +258,11 @@ __handle_root() {
 }
 
 __handle_build() {
-  DEBUG=true UPDATE="${UPDATE:-false}" __copy_skel "${BASE_DIR}/dist"
+  UPDATE="${UPDATE:-false}" __copy_skel "${BASE_DIR}/dist/home"
 }
 
-__handle_deploy() {
-  echo "__handle_deploy"
+__handle_dist() {
+  UPDATE="${UPDATE:-false}" __copy_dist
 }
 
 __handle_linux() {
@@ -289,6 +298,7 @@ __main_install() {
       'all') UPDATE="${UPDATE:-false}" __configure_profiles;;
       'bash') UPDATE="${UPDATE:-false}" __handle_basic_bash;;
       'cron') UPDATE="${UPDATE:-false}" __handle_cron;;
+      'dist') UPDATE="${UPDATE:-false}" __handle_dist;;
       'env') UPDATE="${UPDATE:-false}" __handle_env;;
       'git') UPDATE="${UPDATE:-false}" __handle_git;;
       'root') UPDATE="${UPDATE:-false}" __handle_root;;
@@ -300,7 +310,7 @@ __main_install() {
 __main_option_choice() {
   while [ $# -gt 0 ]; do
     case $1 in
-      '-b'|'--build') __handle_build;;
+      '-b'|'--build') UPDATE=true __handle_build;;
       '-c'|'--cron') __handle_cron;;
       '-g'|'--git') shift; __main_git "$@";;
       '-i'|'--install') __main_install "${2:-""}"; shift;;

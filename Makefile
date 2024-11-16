@@ -54,15 +54,15 @@ list:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --cron
 
 .PHONY: .update-bash
-.update-bash: skel-commit
+.update-bash: commit
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update bash
 
 .PHONY: .update-env
-.update-env: skel-commit
+.update-env: commit
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update env
 
 .PHONY: .update-git
-.update-git: skel-commit
+.update-git: commit
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update git
 
 .PHONY: .update-cron
@@ -70,17 +70,21 @@ list:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update cron
 
 .PHONY: .update
-.update: skel-commit
+.update: commit
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update all
 
-.PHONY: .skel-commit
-.skel-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
-.skel-commit:
+.PHONY: .update-dist
+.update-dist: commit
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update dist
+
+.PHONY: commit
+.home-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.home-commit:
 	@set -x; BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)
 
-.PHONY: .skel-status
-.skel-status: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
-.skel-status:
+.PHONY: .home-status
+.home-status: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.home-status:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git status
 
 .PHONY: .build
@@ -88,7 +92,7 @@ list:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --build
 
 .PHONY: .deploy
-.deploy: update-skel
+.deploy: update-dist
 ####################
 # Common
 ####################
@@ -104,6 +108,7 @@ test: install
 update: .update
 
 .PHONY: build
+build: FILE_NAME = dist/home/.bashrc
 build: .build combined-profile
 
 .PHONY: test-build
@@ -122,8 +127,9 @@ test-deploy: deploy
 ####################
 
 .PHONY: combined-profile
+combined-profile: FILE_NAME := dist/home/.bashrc
 combined-profile:
-	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/profile/generate.sh
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/profile/generate.sh "$(FILE_NAME)"
 
 .PHONY: bbedit-default-editor
 bbedit-default-editor:
@@ -170,7 +176,10 @@ update-git: .update-git
 update-cron: .update-cron
 
 .PHONY: update-skel
-update-skel: skel-commit update-bash update-env update-git
+update-skel: commit update-bash update-env update-git
+
+.PHONY: update-dist
+update-dist: commit .update-dist
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
@@ -178,12 +187,12 @@ test-update-skel: update-skel
 
 ### Maintain
 
-.PHONY: skel-commit
-skel-commit: .skel-commit
+.PHONY: commit
+commit: .home-commit
 
-.PHONY: test-skel-commit
-test-skel-commit: DEBUG = true
-test-skel-commit: skel-commit
+.PHONY: test-commit
+test-commit: DEBUG = true
+test-commit: commit
 
-.PHONY: skel-status
-skel-status: .skel-status
+.PHONY: status
+status: .home-status
