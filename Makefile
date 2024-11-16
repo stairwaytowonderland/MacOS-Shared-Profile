@@ -37,8 +37,8 @@ list:
 .install-full:
 	@set -x DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh
 
-.PHONY: .install-basic-bash
-.install-basic-bash:
+.PHONY: .install-bashrc
+.install-bashrc:
 	@set -x DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --install bash
 
 .PHONY: .install-env
@@ -93,6 +93,7 @@ list:
 
 .PHONY: .deploy
 .deploy: update-dist
+
 ####################
 # Common
 ####################
@@ -108,7 +109,7 @@ test: install
 update: .update
 
 .PHONY: build
-build: FILE_NAME = dist/home/.bashrc
+build: FILE_NAME ?= dist/home/.bashrc
 build: .build combined-profile
 
 .PHONY: test-build
@@ -127,7 +128,7 @@ test-deploy: deploy
 ####################
 
 .PHONY: combined-profile
-combined-profile: FILE_NAME := dist/home/.bashrc
+combined-profile: FILE_NAME ?= dist/home/.bashrc
 combined-profile:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/profile/generate.sh "$(FILE_NAME)"
 
@@ -142,8 +143,8 @@ brew-dump:
 
 ### Install
 
-.PHONY: install-bash-basic
-install-bash-basic: .install-basic-bash
+.PHONY: install-bashrc
+install-bashrc: .install-bashrc
 
 .PHONY: install-env
 install-env: .install-env
@@ -155,7 +156,7 @@ install-git: .install-git
 install-cron: .install-cron
 
 .PHONY: install-skel
-install-skel: install-bash-basic install-env install-git
+install-skel: install-bashrc install-env install-git
 
 .PHONY: test-install-skel
 test-install-skel: DEBUG=true
@@ -196,3 +197,10 @@ test-commit: commit
 
 .PHONY: status
 status: .home-status
+
+.PHONY: quick
+quick: build deploy
+
+.PHONY: test-quick
+test-quick: DEBUG = true
+test-quick: quick

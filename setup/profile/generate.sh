@@ -24,26 +24,26 @@ __generate_profile() {
   log_info "Generating profile from parts ..."
   if ! test -r "$base_path" ; then
     log_warn "Directory '$base_path' doesn't exist. Creating now ..."
-    mkdir -p "$base_path" || true
+    is_debug || mkdir -p "$base_path" || true
   fi
-  printf "#\n# This file was automatically generated from '%s'\n\n" $(echo "$0" | sed "s|${BASE_DIR}/||") \
+  is_debug || printf "#\n# This file was automatically generated from '%s'\n\n" $(echo "$0" | sed "s|${BASE_DIR}/||") \
     >"$file_path"
   for f in $(find "${BASE_DIR}/etc/profile.stub.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
     if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/02-pieces.sh" ]; then
       for p in $(find "${BASE_DIR}/etc/profile.d" -mindepth 1 -maxdepth 1 -type f -name '*.sh' ! -name '.*' | sort); do
         log_info "  - Appending '$p'"
-        printf "\n# -- BEGIN -- '%s'\n" $(echo "$p" | sed "s|${BASE_DIR}/||") >>"$file_path"
-        printf "# ------------------------------------------------------------\n" >>"$file_path"
+        is_debug || printf "\n# -- BEGIN -- '%s'\n" $(echo "$p" | sed "s|${BASE_DIR}/||") >>"$file_path"
+        is_debug || printf "# ------------------------------------------------------------\n" >>"$file_path"
         is_debug || cat >>"$file_path" <"$p"
-        printf "# ------------------------------------------------------------\n" >>"$file_path"
-        printf "# -- END --\n" >>"$file_path"
+        is_debug || printf "# ------------------------------------------------------------\n" >>"$file_path"
+        is_debug || printf "# -- END --\n" >>"$file_path"
       done
     else
         log_info "  - Appending '$f'"
         if [ "$f" = "${BASE_DIR}/etc/profile.stub.d/00-header.sh" ]; then
           is_debug || cat >>"$file_path" <"$f"
         else
-          printf "\n" >>"$file_path"
+          is_debug || printf "\n" >>"$file_path"
           is_debug || cat >>"$file_path" <"$f"
         fi
     fi
