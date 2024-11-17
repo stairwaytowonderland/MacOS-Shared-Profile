@@ -2,7 +2,13 @@
 
 set -eu
 
-bbdiffer() { [ -x "$(command -v bbdiff)" ] && bbdiff --resume --wait -- "$@" || return $?; }
+bbdiffer() {
+  if test -x "$(command -v bbdiff)" ; then
+    bbdiff --resume --wait -- "$@" || return $?
+  else
+    printf "ERROR: Can't find '%s'. Did you install the command line tools?\n" "bbedit"
+  fi
+}
 
 main() {
   local err=0
@@ -11,7 +17,7 @@ main() {
     bbdiffer "$@" || err=$?
     if [ $err -gt 0 ]; then
       case $err in
-        1) printf "For some reason '%s' always exits with code 1.\n" "bbdiff";;
+        1) printf "For some reason '%s' always exits with code 1.\n" "bbdiff" >&2;;
         *) diff -- "$@";;
       esac
     fi
@@ -20,4 +26,4 @@ main() {
   fi
 }
 
-main "$@"
+main "$@" 2>/dev/null

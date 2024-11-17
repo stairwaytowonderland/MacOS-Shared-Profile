@@ -3,13 +3,17 @@
 set -eu
 
 bbwait() {
-  [ -x "$(command -v bbedit)" ] && [ "root" != "$(whoami)" ] && \
-    bbedit --language 'Unix Shell Script' \
-      --create-unix \
-      --new-window \
-      --resume \
-      --wait \
-      -- "$@"
+  if test -x "$(command -v bbedit)" ; then
+    [ "root" != "$(whoami)" ] && \
+      bbedit --language 'Unix Shell Script' \
+        --create-unix \
+        --new-window \
+        --resume \
+        --wait \
+        -- "$@"
+  else
+    printf "ERROR: Can't find '%s'. Did you install the command line tools?\n" "bbedit"
+  fi
 }
 
 main() {
