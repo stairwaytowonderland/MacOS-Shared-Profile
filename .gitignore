@@ -1,31 +1,24 @@
-# Exclude
-.DS_Store
-*.bak
-*.orig
-*.log
-*.lock.json
-
-*.heic
-*.jpg
-*.zip
-
-/private
-/bin
-/dist/bin
-/Downloads
-/Tools
-/Data
-/Backup
-/logitune
-/Relocated*
-
-/.*
-**/.git-*
+# Exclude all
+*
 
 # Include
+
+!/Makefile
+!/README.md
+
 !.editorconfig
 !.gitignore
 !**/.gitignore
 
+!/assets
+
+!/config/**/*.{png,terminal}
 !/config/**/*.jpg
 !/config/**/*.zip
+
+!/cron
+!/dist
+!/etc
+!/lib
+!/setup
+!/templates
