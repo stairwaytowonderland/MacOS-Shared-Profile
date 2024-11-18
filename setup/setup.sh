@@ -19,6 +19,9 @@ XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
 # Record the default umask value
 UMASK=$(builtin umask)
 
+# Set other default values
+UPDATE="${UPDATE:-false}"
+
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
   [ "$delimeter" = "." ] || pattern="(.*)${delimeter}(.*)$"
@@ -39,7 +42,7 @@ __confirm() {
   local msg="$1" default="${2:-n}" yn="[y/N]" input=""
   expr $default : '[yY]' >/dev/null 2>&1 && yn="[Y/n]" || yn="[y/N]"
   read -r -p $'\033[32;1m'"? "$'\033[0m'$'\033[1m'"$msg"$'\033[0m'" $yn " input
-  [ -n "$input" ] || input="$default"
+  test -n "$input" || input="$default"
   expr $input : '[ynYN]' >/dev/null 2>&1 || __confirm "$msg" "$default"
   errcho $input
   expr $input : '[yY]' >/dev/null 2>&1 || return $?
@@ -47,10 +50,10 @@ __confirm() {
 
 __create_dir() {
   local target="$1" group=staff
-  if is "${UPDATE:-false}" || [ ! -r "$target" ]; then
+  if is "${UPDATE:-false}" || ! test -r "$target"; then
     if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
       log_info "Creating target '$target'"
-      is_debug || mkdir -p "$target"
+      is_debug || test -r "$target" || mkdir -p "$target"
       if __confirm "Reset group of '$target' to '$group' (requires sudo)?" ; then
         log_info "Resetting group of '$target' to '$group'"
         is_debug || sudo chown ":${group}" "$target"
@@ -74,10 +77,10 @@ __ensure_parent_dir() {
 __create_symlink() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if is "${UPDATE:-false}" || [ ! -r "$target" ]; then
+    if is "${UPDATE:-false}" || ! test -r "$target"; then
       is_debug || __set_umask
       log_info "Creating symlink '$source' => '$target'"
-      is_debug || ln -s "$source" "$target"
+      is_debug || test -r "$target" || ln -s "$source" "$target"
       is_debug || __restore_umask
     else
       log_note "The target '$target' already exists."
@@ -88,7 +91,7 @@ __create_symlink() {
 __copy_file() {
   local source="$1" target="$2"
   if __ensure_parent_dir "$target" ; then
-    if is "${UPDATE:-false}" || [ ! -r "$target" ]; then
+    if is "${UPDATE:-false}" || ! test -r "$target"; then
       is_debug || __set_umask
       log_info "Copying '$source' to '$target'"
       is_debug || cp "$source" "$target"
@@ -101,7 +104,7 @@ __copy_file() {
 
 __create_bin() {
   local source_dir="$1" target_dir="${2:-$1}" f=""
-  [ -d "$source_dir" ] || return
+  test -d "$source_dir" || return
   for f in $(find "$source_dir" -name '*.sh' -exec echo {} \;); do
     __create_symlink "$f" "${target_dir}/$(basename $(strip_last $f))"
   done
@@ -237,32 +240,33 @@ __git_status() {
 }
 
 __handle_basic_bash() {
-  UPDATE="${UPDATE:-false}" __copy_skel_bash
+  __copy_skel_bash
 }
 
 __handle_cron() {
-  UPDATE="${UPDATE:-false}" __install_crons
-  UPDATE="${UPDATE:-false}" __install_root_crons
+  __install_crons
+  __install_root_crons
 }
 
 __handle_env() {
-  UPDATE="${UPDATE:-false}" __copy_skel_env
+  __copy_skel_env
 }
 
 __handle_git() {
-  UPDATE="${UPDATE:-false}" __copy_skel_git
+  __copy_skel_git
 }
 
 __handle_root() {
-  UPDATE="${UPDATE:-false}" __configure_root
+  __configure_root
 }
 
 __handle_build() {
-  UPDATE="${UPDATE:-false}" __copy_skel "${BASE_DIR}/dist/home"
+  __copy_skel "${BASE_DIR}/dist/home"
+  __create_bin "${BASE_DIR}/lib" "${BASE_DIR}/dist/bin"
 }
 
 __handle_dist() {
-  UPDATE="${UPDATE:-false}" __copy_dist
+  __copy_dist
 }
 
 __handle_linux() {
@@ -295,13 +299,13 @@ __main_git() {
 __main_install() {
   if [ $# -gt 0 ]; then
     case $1 in
-      'all') UPDATE="${UPDATE:-false}" __configure_profiles;;
-      'bash') UPDATE="${UPDATE:-false}" __handle_basic_bash;;
-      'cron') UPDATE="${UPDATE:-false}" __handle_cron;;
-      'dist') UPDATE="${UPDATE:-false}" __handle_dist;;
-      'env') UPDATE="${UPDATE:-false}" __handle_env;;
-      'git') UPDATE="${UPDATE:-false}" __handle_git;;
-      'root') UPDATE="${UPDATE:-false}" __handle_root;;
+      'all') __configure_profiles;;
+      'bash') __handle_basic_bash;;
+      'cron') __handle_cron;;
+      'dist') __handle_dist;;
+      'env') __handle_env;;
+      'git') __handle_git;;
+      'root') __handle_root;;
       *) ;;
     esac
   fi
@@ -310,11 +314,11 @@ __main_install() {
 __main_option_choice() {
   while [ $# -gt 0 ]; do
     case $1 in
-      '-b'|'--build') UPDATE=true __handle_build;;
+      '-b'|'--build') UPDATE=true; __handle_build;;
       '-c'|'--cron') __handle_cron;;
       '-g'|'--git') shift; __main_git "$@";;
       '-i'|'--install') __main_install "${2:-""}"; shift;;
-      '-u'|'--update') UPDATE=true __main_install "${2:-""}"; shift;;
+      '-u'|'--update') UPDATE=true; __main_install "${2:-""}"; shift;;
       *) ;;
     esac
     shift

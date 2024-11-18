@@ -18,7 +18,7 @@ __umask_override() {
 __umask_hook() {
   if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
     for d in $UMASK_OVERRIDE_DIRS; do
-      if [ -d "$d" ]; then
+      if test -d "$d" ; then
         case $(realpath $PWD)/ in
           $d/*)
             for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
