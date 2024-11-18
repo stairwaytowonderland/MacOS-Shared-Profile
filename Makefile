@@ -80,7 +80,7 @@ list: ## List public targets
 .update-dist: commit
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update dist
 
-.PHONY: commit
+.PHONY: .home-commit
 .home-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
 .home-commit:
 	@set -x; BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)
@@ -191,15 +191,15 @@ test-update-skel: update-skel ## Test update lall skel files (test-only)
 
 ### Maintain
 
-.PHONY: commit
-commit: .home-commit ## Git commit handled files in $HOME folder
+.PHONY: commit-home
+commit-home: .home-commit ## Git commit handled files in $HOME folder
 
 .PHONY: test-commit
 test-commit: DEBUG = true
 test-commit: commit ## Test git commit handled files in $HOME folder
 
-.PHONY: status
-status: .home-status ## Git status handled files in $HOME folder
+.PHONY: status-commit
+status-commit: .home-status ## Git status handled files in $HOME folder
 
 .PHONY: quick
 quick: build deploy ## Build and then deploy 'dist/home'
