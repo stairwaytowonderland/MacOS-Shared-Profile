@@ -5,8 +5,8 @@
 ####################
 
 SHELL := bash
-UNAME = $(shell uname -s)
-SCRIPT_DIR = $(shell sed "s@$$HOME@~@" <<<$$(pwd))
+UNAME := $(shell uname -s)
+SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 
 ####################
 # Standard
@@ -44,49 +44,35 @@ list: ## List public targets
 .install-bashrc:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --install bash
 
-.PHONY: .install-env
-.install-env:
+.PHONY: .install-skel
+.install-skel: .install-bashrc
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --install env
-
-.PHONY: .install-git
-.install-git:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --install git
 
-.PHONY: .install-cron
-.install-cron:
-	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --cron
-
 .PHONY: .update-bash
-.update-bash: commit
+.update-bash:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update bash
 
-.PHONY: .update-env
-.update-env: commit
+.PHONY: .update-skel
+.update-skel:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update env
-
-.PHONY: .update-git
-.update-git: commit
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update git
 
-.PHONY: .update-cron
-.update-cron:
-	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update cron
-
 .PHONY: .update
-.update: commit
+.update:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update all
 
 .PHONY: .update-dist
-.update-dist: commit
-	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update dist
+.update-dist: DIST_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
+.update-dist:
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update dist $(DIST_FILES)
 
 .PHONY: .home-commit
-.home-commit: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.home-commit: SKEL_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
 .home-commit:
 	@set -x; BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)
 
 .PHONY: .home-status
-.home-status: SKEL_FILES := $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
 .home-status:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git status
 
@@ -95,7 +81,7 @@ list: ## List public targets
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --build
 
 .PHONY: .deploy
-.deploy: update-dist
+.deploy: .update-dist
 
 ####################
 # Common
@@ -109,29 +95,29 @@ test: DEBUG = true
 test: install ## Test install (test-only)
 
 .PHONY: update
-update: .update
+update: commit-home .update
 
 .PHONY: build
 build: FILE_NAME ?= dist/home/.bashrc
-build: .build combined-profile ## Build 'dist/home'
+build: .build combined-profile ## Build files 'dist/.*'
 
 .PHONY: test-build
 test-build: DEBUG = true
-test-build: build ## Test build 'dist/home' (test-only)
+test-build: build ## Test build (test-only)
 
 .PHONY: deploy
-deploy: .deploy ## Copy 'dist/home' to $HOME; $HOME will get backed up with git
+deploy: .deploy ## Copy files 'dist/.*' to $HOME; $HOME will get backed up with git
 
 .PHONY: test-deploy
 test-deploy: DEBUG = true
-test-deploy: deploy ## Test copy 'dist/home' to $HOME
+test-deploy: deploy ## Test deploy (test-only)
 
 ####################
 # Misc
 ####################
 
 .PHONY: combined-profile
-combined-profile: FILE_NAME ?= dist/home/.bashrc
+combined-profile: FILE_NAME ?= dist/.bashrc
 combined-profile: ## Build combined profile in 'dist/home/.bashrc'
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/profile/generate.sh "$(FILE_NAME)"
 
@@ -149,17 +135,8 @@ brew-dump: ## Create brew dump file at 'setup/brew/Brewfile'; Current dump file 
 .PHONY: install-bashrc
 install-bashrc: .install-bashrc ## Install bash (profile) files only; Does not overwrite
 
-.PHONY: install-env
-install-env: .install-env ## Install .env files only; Does not overwrite
-
-.PHONY: install-git
-install-git: .install-git ## Install .gitconfig files only; Does not overwrite
-
-.PHONY: install-cron
-install-cron: .install-cron ## Install crons only
-
 .PHONY: install-skel
-install-skel: install-bashrc install-env install-git ## Install all skel files (bash files, .env, .gitconfig); Does not overwrite
+install-skel: install-bashrc .install-env .install-git ## Install all skel files (bash files, .env, .gitconfig); Does not overwrite
 
 .PHONY: test-install-skel
 test-install-skel: DEBUG=true
@@ -168,26 +145,14 @@ test-install-skel: install-skel ## Install skel files test (test-only); Does not
 ### Update
 
 .PHONY: update-bash
-update-bash: .update-bash ## Install bash (profile) files only
-
-.PHONY: update-env
-update-env: .update-env ## Install .env files only
-
-.PHONY: update-git
-update-git: .update-git ## Install .gitconfig files only
-
-.PHONY: update-cron
-update-cron: .update-cron ## Install crons only
+update-bash: commit-home .update-bash ## Install bash (profile) files only
 
 .PHONY: update-skel
-update-skel: commit update-bash update-env update-git ## Install all skel files (bash files, .env, .gitconfig)
-
-.PHONY: update-dist
-update-dist: commit .update-dist ## Update all files in 'dist/home'
+update-skel: commit-home update-bash .update-env .update-git ## Install all skel files (bash files, .env, .gitconfig)
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
-test-update-skel: update-skel ## Test update lall skel files (test-only)
+test-update-skel: update-skel ## Test update (test-only)
 
 ### Maintain
 
@@ -196,7 +161,7 @@ commit-home: .home-commit ## Git commit handled files in $HOME folder
 
 .PHONY: test-commit
 test-commit: DEBUG = true
-test-commit: commit ## Test git commit handled files in $HOME folder
+test-commit: commit-home ## Test git commit handled files in $HOME folder
 
 .PHONY: status-commit
 status-commit: .home-status ## Git status handled files in $HOME folder

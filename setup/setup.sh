@@ -19,9 +19,6 @@ XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
 # Record the default umask value
 UMASK=$(builtin umask)
 
-# Set other default values
-UPDATE="${UPDATE:-false}"
-
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
   [ "$delimeter" = "." ] || pattern="(.*)${delimeter}(.*)$"
@@ -138,7 +135,7 @@ __copy_skel_bash() {
   local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.*' ! -name '.env' ! -name '*.env' ! -name '.git*' -exec echo {} \;); do
-    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
+    $mode __copy_file "$f" "$target/$(basename $f)"
   done
   unset f
 }
@@ -147,7 +144,7 @@ __copy_skel_env() {
   local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.env' -name '*.env' -exec echo {} \;); do
-    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
+    $mode __copy_file "$f" "$target/$(basename $f)"
   done
   unset f
 }
@@ -156,22 +153,22 @@ __copy_skel_git() {
   local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/etc/skel" -mindepth 1 -type f -name '.git*' -exec echo {} \;); do
-    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
+    $mode __copy_file "$f" "$target/$(basename $f)"
   done
   unset f
 }
 
 __copy_skel() {
-  UPDATE="${UPDATE:-false}" __copy_skel_bash "$@"
-  UPDATE="${UPDATE:-false}" __copy_skel_git "$@"
-  UPDATE="${UPDATE:-false}" __copy_skel_env "$@"
+  __copy_skel_bash "$@"
+  __copy_skel_git "$@"
+  __copy_skel_env "$@"
 }
 
 __copy_dist() {
   local target="${1:-"$HOME"}" sudo="${2:-false}" mode="" f=""
   ! is "$sudo" || mode=sudo
   for f in $(find "${BASE_DIR}/dist" -mindepth 1 -type f -name '.*' -exec echo {} \;); do
-    UPDATE="${UPDATE:-false}" $mode __copy_file "$f" "$target/$(basename $f)"
+    $mode __copy_file "$f" "$target/$(basename $f)"
   done
   unset f
 }
@@ -192,20 +189,20 @@ __install_root_crons() {
 
 __configure_root() {
   if __confirm "Configure 'root' user (requires sudo)?" "n" ; then
-    if UPDATE="${UPDATE:-false}" || __confirm "Configure 'root' shell ($(command -v bash))?" "y" ; then
+    if is "${UPDATE:-false}" || __confirm "Configure 'root' shell ($(command -v bash))?" "y" ; then
       is_debug || sudo chsh -s "$(command -v bash)"
     fi
-    if UPDATE="${UPDATE:-false}" || __confirm "Configure 'root' profile?" "y" ; then
+    if is "${UPDATE:-false}" || __confirm "Configure 'root' profile?" "y" ; then
       __copy_skel /var/root "true"
     fi
   fi
 }
 
 __configure_profiles() {
-  UPDATE="${UPDATE:-false}" __copy_skel
-  UPDATE="${UPDATE:-false}" __install_crons
-  UPDATE="${UPDATE:-false}" __install_root_crons
-  UPDATE="${UPDATE:-false}" __configure_root
+  __copy_skel
+  __install_crons
+  __install_root_crons
+  __configure_root
 }
 
 __gitconfig_nag() {
@@ -261,7 +258,7 @@ __handle_root() {
 }
 
 __handle_build() {
-  __copy_skel "${BASE_DIR}/dist/home"
+  __copy_skel "${BASE_DIR}/dist"
   __create_bin "${BASE_DIR}/lib" "${BASE_DIR}/dist/bin"
 }
 
@@ -286,23 +283,26 @@ __handle_windows() {
 }
 
 __main_git() {
+  local primary="${1:-""}"
   while [ $# -gt 0 ]; do
-    case $1 in
+    shift
+    case $primary in
       'commit') shift; __git_commit "$@";;
       'status') __git_status;;
       *) ;;
     esac
-    shift
   done
 }
 
 __main_install() {
+  local primary="${1:-""}"
   if [ $# -gt 0 ]; then
-    case $1 in
+    shift
+    case $primary in
       'all') __configure_profiles;;
       'bash') __handle_basic_bash;;
       'cron') __handle_cron;;
-      'dist') __handle_dist;;
+      'dist') shift; __handle_dist "$@";;
       'env') __handle_env;;
       'git') __handle_git;;
       'root') __handle_root;;
@@ -312,16 +312,17 @@ __main_install() {
 }
 
 __main_option_choice() {
+  local primary="${1:-""}"
   while [ $# -gt 0 ]; do
-    case $1 in
-      '-b'|'--build') UPDATE=true; __handle_build;;
+    shift
+    case $primary in
+      '-b'|'--build') UPDATE=true __handle_build;;
       '-c'|'--cron') __handle_cron;;
       '-g'|'--git') shift; __main_git "$@";;
-      '-i'|'--install') __main_install "${2:-""}"; shift;;
-      '-u'|'--update') UPDATE=true; __main_install "${2:-""}"; shift;;
+      '-i'|'--install') secondary="${2:-""}"; shift; __main_install "$secondary";;
+      '-u'|'--update') secondary="${2:-""}"; shift; UPDATE=true __main_install "$secondary" "$@";;
       *) ;;
     esac
-    shift
   done
 }
 
