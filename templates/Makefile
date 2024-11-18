@@ -15,15 +15,18 @@ SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 .PHONY: all
 all: $(TARGETS)
 	@printf "\033[1m%s\033[0m\n" "Please specify additional targets"
-	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n3 printf "%-25s%-25s%-25s%s\n"
+	@LC_ALL=C $(MAKE) .list-targets | sed -E 's/^all ?//' | sort -u | xargs -n3 printf "%-26s%-26s%-26s%s\n"
 
 .PHONY: help
-help:
-	@LC_ALL=C $(MAKE) .list-targets | xargs -n4 printf "%-25s%-25s%-25s%s\n"
+help: ## Show this help.
+	@echo "Please use \`make <target>' where <target> is one of"
+	@grep '^[a-zA-Z]' $(MAKEFILE_LIST) | \
+    sort | \
+    awk -F ':.*?## ' 'NF==2 {printf "\033[36m  %-26s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: list
-list:
-	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n3 printf "%-25s%-25s%-25s%s\n"
+list: ## List public targets
+	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n3 printf "%-26s%-26s%-26s%s\n"
 
 ####################
 # Helpers

@@ -11,6 +11,18 @@ fi
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
 
+# GNU Equivalents
+__realpath() (
+    local path=$1 file=''
+    if [ ! -d "$path" ]; then
+      file=/$(basename -- "$path")
+      path=$(dirname -- "$path")
+    fi
+    path=$(cd -- "$path" && pwd)$file || return $?
+    printf %s\\n "/${path#"${path%%[!/]*}"}"
+)
+command -v realpath >/dev/null || alias realpath='__realpath'
+
 # Basic Output
 
 errcho() { >&2 echo -e "$@"; }
