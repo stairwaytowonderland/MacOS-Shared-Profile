@@ -28,6 +28,9 @@ help: ## Show this help.
 list: ## List public targets
 	@LC_ALL=C $(MAKE) .list-targets | grep -E -v -e '^[^[:alnum:]]' -e '^$@$$' | xargs -n3 printf "%-26s%-26s%-26s%s\n"
 
+.PHONY: clean
+clean: commit-home .clean-home .clean-dist ## Clean 'dist/' and $HOME; Removes any files added by the installer
+
 ####################
 # Helpers
 ####################
@@ -82,6 +85,25 @@ list: ## List public targets
 
 .PHONY: .deploy
 .deploy: .update-dist
+
+.PHONY: .clean-dist
+.clean-dist: DIST_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
+.clean-dist:
+	$(RM) $(DIST_FILES)
+
+.PHONY: .clean-home
+.clean-home: SKEL_BASE_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name '.*' -exec sh -c ' \
+	for file do \
+		basename $$file; \
+	done' sh {} +)
+.clean-home: HOME_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name '.*' -exec sh -c ' \
+	for file do \
+		! test -r "$(HOME)/$$(basename $$file)" || echo "$(HOME)/$$(basename $$file)"; \
+	done' sh {} +)
+.clean-home: TAR_FILE ?= "$$(realpath $(SCRIPT_DIR))/Backup/$(USER)-$$(date +%m%d%y%H%M%S).tar.gz"
+.clean-home:
+	@echo "$(SKEL_BASE_FILES)" | xargs tar -C "$(HOME)" -czvf "$(TAR_FILE)" -T -
+	$(RM) $(HOME_FILES)
 
 ####################
 # Common
@@ -163,8 +185,8 @@ commit-home: .home-commit ## Git commit handled files in $HOME folder
 test-commit: DEBUG = true
 test-commit: commit-home ## Test git commit handled files in $HOME folder
 
-.PHONY: status-commit
-status-commit: .home-status ## Git status handled files in $HOME folder
+.PHONY: status-home
+status-home: .home-status ## Git status handled files in $HOME folder
 
 .PHONY: quick
 quick: build deploy ## Build and then deploy 'dist/home'
