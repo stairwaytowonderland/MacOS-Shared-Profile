@@ -52,9 +52,10 @@ __create_dir() {
     if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
       log_info "Creating target '$target'"
       is_debug || test -r "$target" || mkdir -p "$target"
-      if __confirm "Reset group of '$target' to '$group' (requires sudo)?" ; then
+      if __confirm "Reset group of '$target' to '$group' and make group-writeable (requires sudo)?" ; then
         log_info "Resetting group of '$target' to '$group'"
         is_debug || sudo chown ":${group}" "$target"
+        is_debug || sudo chmod g+w "$target"
       fi
     fi
   else
