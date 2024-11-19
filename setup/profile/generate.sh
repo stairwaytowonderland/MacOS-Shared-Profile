@@ -15,7 +15,8 @@ UNAME="${UNAME:-$(uname -s)}"
 
 FILE_NAME="${FILE_NAME:-dist/bashrc}"
 
-[ -r "$BASE_DIR/etc/profile.d/02-functions.sh" ] && . "$BASE_DIR/etc/profile.d/02-functions.sh"
+test -r "$BASE_DIR/etc/profile.d/01-colors.sh" && . "$BASE_DIR/etc/profile.d/01-colors.sh"
+test -r "$BASE_DIR/etc/profile.d/02-functions.sh" && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
 __generate_profile() {
   local file_name="${1:-$FILE_NAME}"

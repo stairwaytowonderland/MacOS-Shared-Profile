@@ -11,7 +11,8 @@ fi
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
 
-[ -r "$BASE_DIR/etc/profile.d/02-functions.sh" ] && . "$BASE_DIR/etc/profile.d/02-functions.sh"
+test -r "$BASE_DIR/etc/profile.d/01-colors.sh" && . "$BASE_DIR/etc/profile.d/01-colors.sh"
+test -r "$BASE_DIR/etc/profile.d/02-functions.sh" && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
 # https://specifications.freedesktop.org/basedir-spec/latest/
 XDG_DATA_HOME="${XDG_DATA_HOME:=$HOME/.local/share}"
@@ -22,7 +23,7 @@ UMASK=$(builtin umask)
 strip_last() {
   local str="$1" delimeter="${2:-.}" pattern="(.*)\.(.*)$"
   [ "$delimeter" = "." ] || pattern="(.*)${delimeter}(.*)$"
-  [ -n "$str" ] && echo "$str" | sed -E "s/${pattern}/\1/"
+  test -n "$str" && echo "$str" | sed -E "s/${pattern}/\1/"
 }
 
 install_brewfile() {
@@ -35,7 +36,7 @@ __set_umask() { umask 0022; }
 __restore_umask() { umask $UMASK; }
 
 __confirm() {
-  [ -n "${1:-""}" ] || return
+  test -n "${1:-""}" || return
   local msg="$1" default="${2:-n}" yn="[y/N]" input=""
   expr $default : '[yY]' >/dev/null 2>&1 && yn="[Y/n]" || yn="[y/N]"
   read -r -p $'\033[32;1m'"? "$'\033[0m'$'\033[1m'"$msg"$'\033[0m'" $yn " input
@@ -182,7 +183,7 @@ __install_crons() {
 
 __install_root_crons() {
   if is "${UPDATE:-false}" || __confirm "Install root crons (requires sudo)?" ; then
-    printf "\033[1mUpdating root crontab with: %s\033[0m\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
+    printf "${C_BOLD}Updating root crontab with: %s${C_DEFAULT}\n" $(ls ${BASE_DIR}/cron/root/{../.header,*.cron})
     is_debug || cat ${BASE_DIR}/cron/root/{../.header,*.cron} | sudo crontab -
   fi
 }
@@ -206,7 +207,7 @@ __configure_profiles() {
 }
 
 __gitconfig_nag() {
-  printf "\033[1m%s\033[0m:\n\n\t%s\n\n... \033[1m%s\033[0m\n" \
+  printf "${C_BOLD}%s${C_DEFAULT}:\n\n\t%s\n\n... ${C_BOLD}%s${C_DEFAULT}\n" \
     "Remember to generate your ssh keys" \
     "https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent" \
     "and update your ~/.gitconfig"
@@ -340,7 +341,7 @@ __main_os_choice() {
 }
 
 main() {
-  ! is_debug || log_warn "DEBUG is set to 'true'; $(echo $'\e[1m')no actual changes should be made$(echo $'\e[0m')"
+  ! is_debug || log_warn "DEBUG is set to '$DEBUG'; ${C_BOLD}no actual changes should be made${C_DEFAULT}"
   if [ $# -gt 0 ]; then
     __main_option_choice "$@"
   else
