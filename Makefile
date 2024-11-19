@@ -14,8 +14,9 @@ SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
 
 .PHONY: help
 help: ## Show this help.
-	@printf "\033[1m%s\033[0m\n\n" "Use \`make help' to display this message"
-	@printf "\033[1m%s\033[0m\n" "Please use \`make <target>' where <target> is one of"
+	@printf "\033[1;4m%s\033[0m\n" "Usage"
+	@printf "(%s)\n" "Use \`make help' to show this message"
+	@printf "\033[1m%s\033[0m\n" "Please use \`make <target>' where <target> is one of:"
 	@grep '^[a-zA-Z]' $(MAKEFILE_LIST) | \
     sort | \
     awk -F ':.*?## ' 'NF==2 {printf "\033[36m  %-26s\033[0m %s\n", $$1, $$2}'
@@ -125,9 +126,9 @@ test: install ## Test install (test-only)
 .PHONY: update
 update: update-bashrc # Basic update
 
-.PHONY: test-update-all
-test-update-all: DEBUG = true
-test-update-all: .update-all # Test full update (test-only)
+.PHONY: test-update
+test-update: DEBUG = true
+test-update: .update # Test basic update (test-only)
 
 .PHONY: build
 build: FILE_NAME ?= dist/home/.bashrc
@@ -181,11 +182,11 @@ test-install-skel: install-skel ## Install skel files test (test-only); Does not
 ### Update
 
 .PHONY: update-all
-update-all: commit-home .update-all # Full update
+update-all: commit-home .update-all ## Full update
 
 .PHONY: test-update-all
 test-update-all: DEBUG = true
-test-update-all: .update-all # Test full update (test-only)
+test-update-all: .update-all ## Test full update (test-only)
 
 .PHONY: update-bashrc
 update-bashrc: commit-home .update-bashrc ## Install bash (profile) files only
