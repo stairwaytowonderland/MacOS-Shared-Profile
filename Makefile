@@ -38,7 +38,7 @@ clean: HOME_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name '.
 		! test -r "$(HOME)/$$(basename $$file)" || echo "$(HOME)/$$(basename $$file)"; \
 	done' sh {} +)
 clean: TAR_FILE ?= "$$(realpath $(SCRIPT_DIR))/Backup/$(USER)-$$(date +%m%d%y%H%M%S).tar.gz"
-clean: commit-home ## Clean 'dist/' and $HOME; Removes any files added by the installer
+clean: git-commit-home ## Clean 'dist/' and $HOME; Removes any files added by the installer
 	@echo "$(SKEL_BASE_FILES)" | xargs tar -C "$(HOME)" -czvf "$(TAR_FILE)" -T -
 	$(RM) $(HOME_FILES)
 
@@ -139,7 +139,7 @@ test-build: DEBUG = true
 test-build: build
 
 .PHONY: deploy
-deploy: commit-home .deploy ## Copy files 'dist/.*' to $HOME; $HOME will get backed up with git
+deploy: git-commit-home .deploy ## Copy files 'dist/.*' to $HOME; $HOME will get backed up with git
 
 .PHONY: test-deploy
 test-deploy: DEBUG = true
@@ -182,21 +182,21 @@ test-install-skel: install-skel
 ### Update
 
 .PHONY: update-all
-update-all: commit-home .update-all ## Full update
+update-all: git-commit-home .update-all ## Full update
 
 .PHONY: test-update-all
 test-update-all: DEBUG = true
 test-update-all: .update-all
 
 .PHONY: update-bashrc
-update-bashrc: commit-home .update-bashrc ## Install bash (profile) files only
+update-bashrc: git-commit-home .update-bashrc ## Install bash (profile) files only
 
 .PHONY: test-update-bashrc
 test-update-bashrc: DEBUG=true
 test-update-bashrc: .update-bashrc
 
 .PHONY: update-skel
-update-skel: commit-home update-bashrc .update-env .update-git ## Install all skel files
+update-skel: git-commit-home update-bashrc .update-env .update-git ## Install all skel files
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
@@ -204,15 +204,15 @@ test-update-skel: .update-bashrc .update-env .update-git
 
 ### Maintain
 
-.PHONY: commit-home
-commit-home: .home-commit ## Git commit handled files in $HOME folder
+.PHONY: git-commit-home
+git-commit-home: .home-commit ## Git commit handled files in $HOME folder
 
 .PHONY: test-commit
 test-commit: DEBUG = true
-test-commit: commit-home
+test-commit: git-commit-home
 
-.PHONY: status-home
-status-home: .home-status ## Git status handled files in $HOME folder
+.PHONY: git-status-home
+git-status-home: .home-status ## Git status handled files in $HOME folder
 
 .PHONY: rebuild
 rebuild: build deploy ## Build and then deploy 'dist/home'
