@@ -340,7 +340,7 @@ __main_os_choice() {
 }
 
 main() {
-  ! is_debug || log_warn "DEBUG is set to 'true' ... Output Only (hopefully)"
+  ! is_debug || log_warn "DEBUG is set to 'true'; $(echo $'\e[1m')no actual changes should be made$(echo $'\e[0m')"
   if [ $# -gt 0 ]; then
     __main_option_choice "$@"
   else
