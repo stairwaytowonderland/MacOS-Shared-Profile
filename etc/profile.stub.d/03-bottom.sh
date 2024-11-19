@@ -9,3 +9,4 @@ fi
 output "$(alias)"
 
 [ ! -r "$(dirname $XDG_DATA_HOME)/bin" ] || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
+[ ! -r "$HOME/bin" ] || export PATH="$HOME/bin:$PATH"
