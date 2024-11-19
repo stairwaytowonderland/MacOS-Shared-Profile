@@ -160,7 +160,7 @@ bbedit-default-editor: ## Run script to set bbedit as the default editor on maco
 
 .PHONY: brew-dump
 brew-dump: BREWFILE = "$(SCRIPT_DIR)/setup/brew/Brewfile"
-brew-dump: ## Create brew dump file at 'setup/brew/Brewfile'; Current dump file (setup/brew/Brewfile) will get backed up
+brew-dump: ## Create brew dump file; Existing file will get backed up
 	@set -x; [ ! -r $(BREWFILE) ] || cp "$(BREWFILE)" "$(BREWFILE).$(shell date +\%u.\%H).bak" && brew bundle dump --file="$(BREWFILE)" --force
 
 ### Install
@@ -173,7 +173,7 @@ test-install-bashrc: DEBUG=true
 test-install-bashrc: install-bashrc
 
 .PHONY: install-skel
-install-skel: install-bashrc .install-env .install-git ## Install all skel files (bash files, .env, .gitconfig); Does not overwrite
+install-skel: install-bashrc .install-env .install-git ## Install all skel files; Does not overwrite
 
 .PHONY: test-install-skel
 test-install-skel: DEBUG=true
@@ -196,7 +196,7 @@ test-update-bashrc: DEBUG=true
 test-update-bashrc: .update-bashrc
 
 .PHONY: update-skel
-update-skel: commit-home update-bashrc .update-env .update-git ## Install all skel files (bash files, .env, .gitconfig)
+update-skel: commit-home update-bashrc .update-env .update-git ## Install all skel files
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
