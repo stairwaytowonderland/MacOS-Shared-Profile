@@ -40,7 +40,7 @@ list: ## List public targets
 ####################
 
 .PHONY: install
-install: .install
+install: .install ## Install
 
 .PHONY: test
 test: DEBUG = true

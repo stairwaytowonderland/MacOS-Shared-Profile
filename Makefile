@@ -121,14 +121,14 @@ install: .install-full ## Full install
 
 .PHONY: test
 test: DEBUG = true
-test: install ## Test install (test-only)
+test: install
 
 .PHONY: update
 update: update-bashrc ## Basic update
 
 .PHONY: test-update
 test-update: DEBUG = true
-test-update: .update ## Test basic update (test-only)
+test-update: .update
 
 .PHONY: build
 build: FILE_NAME ?= dist/home/.bashrc
@@ -136,14 +136,14 @@ build: .build combined-profile ## Build files 'dist/.*'
 
 .PHONY: test-build
 test-build: DEBUG = true
-test-build: build ## Test build (test-only)
+test-build: build
 
 .PHONY: deploy
 deploy: commit-home .deploy ## Copy files 'dist/.*' to $HOME; $HOME will get backed up with git
 
 .PHONY: test-deploy
 test-deploy: DEBUG = true
-test-deploy: .deploy ## Test deploy (test-only)
+test-deploy: .deploy
 
 ####################
 # Misc
@@ -170,14 +170,14 @@ install-bashrc: .install-bashrc ## Install bash (profile) files only; Does not o
 
 .PHONY: test-install-bashrc
 test-install-bashrc: DEBUG=true
-test-install-bashrc: install-bashrc ## Install skel files test (test-only); Does not overwrite
+test-install-bashrc: install-bashrc
 
 .PHONY: install-skel
 install-skel: install-bashrc .install-env .install-git ## Install all skel files (bash files, .env, .gitconfig); Does not overwrite
 
 .PHONY: test-install-skel
 test-install-skel: DEBUG=true
-test-install-skel: install-skel ## Install skel files test (test-only); Does not overwrite
+test-install-skel: install-skel
 
 ### Update
 
@@ -186,21 +186,21 @@ update-all: commit-home .update-all ## Full update
 
 .PHONY: test-update-all
 test-update-all: DEBUG = true
-test-update-all: .update-all ## Test full update (test-only)
+test-update-all: .update-all
 
 .PHONY: update-bashrc
 update-bashrc: commit-home .update-bashrc ## Install bash (profile) files only
 
 .PHONY: test-update-bashrc
 test-update-bashrc: DEBUG=true
-test-update-bashrc: .update-bashrc ## Test update-bashrc (test-only)
+test-update-bashrc: .update-bashrc
 
 .PHONY: update-skel
 update-skel: commit-home update-bashrc .update-env .update-git ## Install all skel files (bash files, .env, .gitconfig)
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
-test-update-skel: .update-bashrc .update-env .update-git ## Test update-skel (test-only)
+test-update-skel: .update-bashrc .update-env .update-git
 
 ### Maintain
 
@@ -209,7 +209,7 @@ commit-home: .home-commit ## Git commit handled files in $HOME folder
 
 .PHONY: test-commit
 test-commit: DEBUG = true
-test-commit: commit-home ## Test git commit handled files in $HOME folder
+test-commit: commit-home
 
 .PHONY: status-home
 status-home: .home-status ## Git status handled files in $HOME folder
@@ -219,4 +219,4 @@ rebuild: build deploy ## Build and then deploy 'dist/home'
 
 .PHONY: test-rebuild
 test-rebuild: DEBUG = true
-test-rebuild: rebuild ## Test buld and deploy of 'dist/home'
+test-rebuild: rebuild
