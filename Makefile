@@ -124,11 +124,11 @@ test: DEBUG = true
 test: install ## Test install (test-only)
 
 .PHONY: update
-update: update-bashrc # Basic update
+update: update-bashrc ## Basic update
 
 .PHONY: test-update
 test-update: DEBUG = true
-test-update: .update # Test basic update (test-only)
+test-update: .update ## Test basic update (test-only)
 
 .PHONY: build
 build: FILE_NAME ?= dist/home/.bashrc
