@@ -47,9 +47,8 @@ permissions: DIRS ?= $$(realpath $(SCRIPT_DIR)/Data) $$(realpath $(SCRIPT_DIR)/T
 permissions: ## Reset correct permissions on handled directories
 	@for d in $(DIRS) ; do \
 		if test -d "$$d" ; then \
-			if [ "$$(uname -s)" = "Darwin" ]; then \
+			[ "$$(uname -s)" != "Darwin" ] || \
 				( set -x; sudo chown -R :staff "$$d"; sudo chown root:staff "$$d" ); \
-			fi; \
 			( set -x; sudo chmod -R 0775 "$$d"; sudo chmod 1775 "$$d" ); \
 		fi; \
 	done
