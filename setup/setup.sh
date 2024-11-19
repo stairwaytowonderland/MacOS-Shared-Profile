@@ -47,15 +47,16 @@ __confirm() {
 }
 
 __create_dir() {
-  local target="$1" group=staff
+  local target="$1"
   if is "${UPDATE:-false}" || ! test -r "$target"; then
     if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
       log_info "Creating target '$target'"
       is_debug || test -r "$target" || mkdir -p "$target"
-      if __confirm "Reset group of '$target' to '$group' and make group-writeable (requires sudo)?" ; then
-        log_info "Resetting group of '$target' to '$group'"
-        is_debug || sudo chown ":${group}" "$target"
-        is_debug || sudo chmod g+w "$target"
+      if __confirm "Make '$target' accessible to everybody (requires sudo)?" ; then
+        log_info "Resetting ownership of '$target' to 'root:staff'"
+        is_debug || sudo chown root:staff "$target"
+        log_info "Resetting permissions of '$target' to '1775'"
+        is_debug || sudo chmod 1775 "$target"
       fi
     fi
   else

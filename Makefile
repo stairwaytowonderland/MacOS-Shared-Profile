@@ -42,6 +42,18 @@ clean: git-commit-home ## Clean 'dist/' and $HOME; Removes any files added by th
 	@echo "$(SKEL_BASE_FILES)" | xargs tar -C "$(HOME)" -czvf "$(TAR_FILE)" -T -
 	$(RM) $(HOME_FILES)
 
+.PHONY: permissions
+permissions: DIRS ?= $$(realpath $(SCRIPT_DIR)/Data) $$(realpath $(SCRIPT_DIR)/Tools)
+permissions: ## Reset correct permissions on handled directories
+	@for d in $(DIRS) ; do \
+		if test -d "$$d" ; then \
+			if [ "$$(uname -s)" = "Darwin" ]; then \
+				( set -x; sudo chown -R :staff "$$d"; sudo chown root:staff "$$d" ); \
+			fi; \
+			( set -x; sudo chmod -R 0775 "$$d"; sudo chmod 1775 "$$d" ); \
+		fi; \
+	done
+
 ####################
 # Helpers
 ####################
