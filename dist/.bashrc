@@ -56,6 +56,17 @@ esac
 # cd to home
 shopt login_shell >/dev/null && [ "$PWD" = "$HOME" ] || cd ~
 
+# -- BEGIN -- 'etc/profile.d/01-colors.sh'
+# ------------------------------------------------------------
+# define colors for easy reference
+C_DEFAULT=$'\033[00m'; C_BOLD=$'\033[01m'; C_REVERSE=$'\033[07m'
+C_RED=$'\033[00;31m'; C_GREEN=$'\033[00;32m'; C_YELLOW=$'\033[00;33m'
+C_BLUE=$'\033[00;34m'; C_PURPLE=$'\033[00;35m'; C_CYAN=$'\033[00;36m'
+C_RED_BOLD=$'\033[01;31m'; C_GREEN_BOLD=$'\033[01;32m'; C_YELLOW_BOLD=$'\033[01;33m'
+C_BLUE_BOLD=$'\033[01;34m'; C_PURPLE_BOLD=$'\033[01;35m'; C_CYAN_BOLD=$'\033[01;36m'
+# ------------------------------------------------------------
+# -- END --
+
 # -- BEGIN -- 'etc/profile.d/01-env.sh'
 # ------------------------------------------------------------
 # display fancy prompt error/success status, control_c message, and logout message
@@ -265,13 +276,6 @@ command -v realpath >/dev/null || alias realpath='__realpath'
 
 # -- BEGIN -- 'etc/profile.d/03-prompt.sh'
 # ------------------------------------------------------------
-# define colors for easy reference
-C_DEFAULT=$'\033[00m'; C_BOLD=$'\033[01m'; C_REVERSE=$'\033[07m'
-C_RED=$'\033[00;31m'; C_GREEN=$'\033[00;32m'; C_YELLOW=$'\033[00;33m'
-C_BLUE=$'\033[00;34m'; C_PURPLE=$'\033[00;35m'; C_CYAN=$'\033[00;36m'
-C_RED_BOLD=$'\033[01;31m'; C_GREEN_BOLD=$'\033[01;32m'; C_YELLOW_BOLD=$'\033[01;33m'
-C_BLUE_BOLD=$'\033[01;34m'; C_PURPLE_BOLD=$'\033[01;35m'; C_CYAN_BOLD=$'\033[01;36m'
-
 # friendly logout message
 quit() { printf "🤖 %s 🤖\n" "Klaatu barada nikto"; }
 
