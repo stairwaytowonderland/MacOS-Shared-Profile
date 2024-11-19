@@ -1,14 +1,23 @@
-# Exclude all
-*
+# Ignore all
+/*
+
+# Explicit ignore -- Commonly ignored extensions
+**/.DS_Store
+**/*.bak
+**/*.tmp
+**/*.orig
+
+# Explicit ignore -- Ignore all "dot" (hidden) files
+**/.*
 
 # Include
 
+# include the following "dot" (hidden) files
+!/.editorconfig
+!/.gitignore
+
 !/Makefile
 !/README.md
-
-!.editorconfig
-!.gitignore
-!**/.gitignore
 
 !/assets
 
