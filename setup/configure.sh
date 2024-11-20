@@ -74,6 +74,8 @@ __update_shell() {
       log_info "Installing brew 'bash' ..."
       [ "${DEBUG:-false}" = "true" ] || \
         $HOMEBREW_BREW_PATH install bash
+    fi
+    if [ "${SHELL}" != "${HOMEBREW_BASH_PATH}" ] ; then
       log_info "Appending '$HOMEBREW_BASH_PATH' to /etc/shells ..."
       [ "${DEBUG:-false}" = "true" ] || \
         (sudo bash -cx "cat /etc/shells | grep '$HOMEBREW_BASH_PATH'" || sudo bash -cx "echo $HOMEBREW_BASH_PATH >> /etc/shells")
