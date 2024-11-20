@@ -16,6 +16,7 @@
 !/.editorconfig
 !/.gitignore
 
+!/configure.sh
 !/Makefile
 !/README.md
 

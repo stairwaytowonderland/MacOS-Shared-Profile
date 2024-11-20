@@ -53,6 +53,14 @@ permissions: ## Reset correct permissions on handled directories
 		fi; \
 	done
 
+.PHONY: configure
+configure: ## Run configuration script
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/configure.sh
+
+.PHONY: test-configure
+test-configure: DEBUG=true
+test-configure: configure ## Test configuration script
+
 ####################
 # Helpers
 ####################
