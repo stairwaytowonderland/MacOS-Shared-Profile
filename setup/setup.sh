@@ -46,18 +46,23 @@ __confirm() {
   expr $input : '[yY]' >/dev/null 2>&1 || return $?
 }
 
+__set_permissions() {
+  local target="$1" permissions_default="${2:-n}"
+  if __confirm "Make '$target' accessible to everybody (requires sudo)?" "$permissions_default" ; then
+    log_info "Resetting ownership of '$target' to 'root:staff'"
+    is_debug || sudo chown root:staff "$target"
+    log_info "Resetting permissions of '$target' to '1775'"
+    is_debug || sudo chmod 1775 "$target"
+  fi
+}
+
 __create_dir() {
-  local target="$1"
+  local target="$1" permissions_enabled="${2:-false}" permissions_default="${3:-n}"
   if is "${UPDATE:-false}" || ! test -r "$target"; then
-    if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
+    if is "$permissions_enabled" && __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
       log_info "Creating target '$target'"
       is_debug || test -r "$target" || mkdir -p "$target"
-      if __confirm "Make '$target' accessible to everybody (requires sudo)?" ; then
-        log_info "Resetting ownership of '$target' to 'root:staff'"
-        is_debug || sudo chown root:staff "$target"
-        log_info "Resetting permissions of '$target' to '1775'"
-        is_debug || sudo chmod 1775 "$target"
-      fi
+      __set_permissions "$target" "$permissions_default"
     fi
   else
     log_note "The target '$target' already exists."
@@ -112,7 +117,7 @@ __create_bin() {
 }
 
 __create_dirs_and_links() {
-  __create_dir "${BASE_DIR}/Data"
+  __create_dir "${BASE_DIR}/Data" "true" "y"
   __create_bin "${BASE_DIR}/lib" "${BASE_DIR}/dist/bin"
   __create_symlink "${BASE_DIR}/dist/bin" "${BASE_DIR}/bin"
   __create_symlink "${BASE_DIR}/bin" "$(dirname $XDG_DATA_HOME)/bin"
@@ -130,7 +135,6 @@ __brewfile() {
 
 __configure_dependencies() {
   local brewfile="${HOME}/Brewfile"
-  __create_dirs_and_links
   __brewfile "$brewfile"
 }
 
@@ -270,14 +274,16 @@ __handle_dist() {
 }
 
 __handle_linux() {
-  __configure_dependencies
+  __create_dirs_and_links
   __configure_profiles
+  __configure_dependencies
   __gitconfig_nag
 }
 
 __handle_darwin() {
-  __configure_dependencies
+  __create_dirs_and_links
   __configure_profiles
+  __configure_dependencies
   __gitconfig_nag
 }
 

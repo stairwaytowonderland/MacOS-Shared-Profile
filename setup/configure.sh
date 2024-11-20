@@ -10,8 +10,15 @@ fi
 
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
-HOMEBREW_BREW_PATH=/opt/homebrew/bin/brew
-HOMEBREW_BASH_PATH=/opt/homebrew/bin/bash
+
+# Homebrew path (brew --prefix / $HOMEBREW_PREFIX) is different on macOS 13.0 and below ('/usr/local' instead of '/opt/homebrew')
+if test "$(/usr/bin/sw_vers -productVersion | awk -F'.' '{print $1}')" -gt "13" ; then
+  HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
+else
+  HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/usr/local}"
+fi
+HOMEBREW_BREW_PATH="${HOMEBREW_PREFIX}/bin/brew"
+HOMEBREW_BASH_PATH="${HOMEBREW_PREFIX}/bin/bash"
 
 # Core
 
