@@ -11,9 +11,15 @@ fi
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
 
-# Basic Output
+# Core
 
-errcho() { >&2 echo -e "$@"; }
+errcho() { >&2 printf "%s\n" "$@"; }
+abort() {
+  local err="$?"
+  [ -n "${err}" -a "${err}" != "0" ] || err=1
+  [ $# -gt 0 ] && errcho "$@" || errcho "There was a problem."
+  exit $err
+}
 
 # Boolean Checks
 
@@ -51,8 +57,9 @@ equals() { is_equal "$@" 2>/dev/null; }
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  [ "${color_msg}" = "true" ] || color_msg=false
+  [ "$color_msg" = "true" ] || color_msg="false"
   case $level in
+    note) label_code="${label_code:-95}"; label="${label:-NOTE}";;
     info) label_code="${label_code:-94}"; label="${label:-INFO}";;
     warn) label_code="${label_code:-93}"; label="${label:-WARN}";;
     success) label_code="${label_code:-92}"; label="${label:-SUCCESS}";;
@@ -63,6 +70,7 @@ logmsg() {
   label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
   printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
 }
+log_note() { logmsg note "$1"; }
 log_info() { logmsg info "$1"; }
 log_warn() { logmsg warn "$1"; }
 log_success() { logmsg success "$1"; }

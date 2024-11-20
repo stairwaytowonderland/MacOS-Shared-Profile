@@ -195,7 +195,7 @@ equals() { is_equal "$@" 2>/dev/null; }
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
-  equals "$color_msg" "true" || color_msg="false"
+  [ "$color_msg" = "true" ] || color_msg="false"
   case $level in
     note) label_code="${label_code:-95}"; label="${label:-NOTE}";;
     info) label_code="${label_code:-94}"; label="${label:-INFO}";;
