@@ -151,15 +151,15 @@ __configure_shell() {
 main() {
   __homebrew_compatibility
   __options "$@"
-  SHELL_ONLY="${2-false}" __configure_shell
+  SHELL_ONLY="${SHELL_ONLY:-false}" __configure_shell
 }
 
 __options() {
   while [ $# -gt 0 ]; do
     case "$1" in
       -h | --help) usage ;;
-      -l | --legacy-os) HOMEBREW_LEGACY_OS="${2:-true}" __homebrew_compatibility; shift ;;
-      -s | --shell-only) SHELL_ONLY="${2-false}" __configure_shell && exit $? || exit $? ;;
+      -l | --legacy-os) HOMEBREW_LEGACY_OS="${2:-true}" __homebrew_compatibility ;;
+      -s | --shell-only) SHELL_ONLY="${SHELL_ONLY:-true}" ;;
       *)
         log_warn "Unrecognized option: '$1'"
         usage 1
