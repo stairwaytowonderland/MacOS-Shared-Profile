@@ -1,3 +1,5 @@
+test -n "${HOMEBREW_BREW_PATH}" || __homebrew_compatibility
+
 if test -x "${HOMEBREW_BREW_PATH}"; then
   eval "$($HOMEBREW_BREW_PATH shellenv)"
 

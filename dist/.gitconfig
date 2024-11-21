@@ -25,7 +25,26 @@
 
 ################################################################################
 
+### Core
+
+[init]
+	## git config --global init.defaultBranch main
+	defaultBranch = main
+
+[pull]
+	## git config --global pull.rebase true
+	rebase = true
+
+[user]
+	## git config --global user.name "Full Name"
+	name = Full Name
+	## git config --global user.email "email@example.com"
+	email = email@example.com
+	## git config --global user.username "your_user-name"
+	# username = your_user-name
+
 ### Helper
+
 [core]
 	editor = ~/.local/bin/bbeditor
 [diff]
@@ -36,6 +55,7 @@
 	cmd = ~/.local/bin/bbdiffer "$LOCAL" "$REMOTE"
 
 ### Security (SSH Signing only supported with git>=2.34)
+
 #[user]
 #	## git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
 #	signingkey = ~/.ssh/github/id_ed25519.pub
@@ -54,23 +74,6 @@
 #	## git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
 #	allowedSignersFile = ~/.ssh/allowed_signers
 
-### Core
-
-[user]
-	## git config --global user.name "Full Name"
-	name = Full Name
-	## git config --global user.email "email@example.com"
-	email = email@example.com
-	## git config --global user.username "your_user-name"
-	# username = your_user-name
-
-[init]
-	## git config --global init.defaultBranch main
-	defaultBranch = main
-
-[pull]
-	## git config --global pull.rebase true
-	rebase = true
-
 ################################################################################
 
+### Misc Configurations and Overrides
