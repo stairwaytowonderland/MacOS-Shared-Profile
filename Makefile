@@ -208,14 +208,14 @@ test-update-all: DEBUG = true
 test-update-all: .update-all
 
 .PHONY: update-bashrc
-update-bashrc: git-commit-home .update-skel ## Install bash (profile) files only
+update-bashrc: git-commit-home .update-bashrc ## Install bash (profile) files only
 
 .PHONY: test-update-bashrc
 test-update-bashrc: DEBUG=true
 test-update-bashrc: .update-bashrc
 
 .PHONY: update-skel
-update-skel: git-commit-home .update-bashrc ## Install all skel files
+update-skel: git-commit-home .update-skel ## Install all skel files
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
