@@ -453,14 +453,17 @@ __umask_override() {
 }
 
 __umask_hook() {
+  local flag=false
   if [ "$UMASK_OVERRIDE" != "$UMASK_DEFAULT" -a -n "$UMASK_OVERRIDE_DIRS" ]; then
     for d in $UMASK_OVERRIDE_DIRS; do
       if test -d "$d" ; then
         case $(realpath $PWD)/ in
           $d/*)
-            for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
-              [ "$(realpath $PWD)" = "$(realpath $e)" ] && flag=true && break || flag=false
-            done
+            if test -n "$UMASK_OVERRIDE_EXCLUDE_DIRS" ; then
+              for e in $UMASK_OVERRIDE_EXCLUDE_DIRS; do
+                [ "$(realpath $PWD)" = "$(realpath $e)" ] && flag=true && break || flag=false
+              done
+            fi
             $flag && __umask_default || __umask_override
             ;;
           *) __umask_default;;
