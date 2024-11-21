@@ -43,24 +43,24 @@
 [difftool "bbdiff"]
 	cmd = ~/.local/bin/bbdiffer "$LOCAL" "$REMOTE"
 
-### Security
-[user]
-	## git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
-	signingkey = ~/.ssh/github/id_ed25519.pub
-[gpg]
-	## git config --global gpg.format ssh
-	format = ssh
-[commit]
-	### Automatically sign commits
-	## git config --global commit.gpgsign true
-	gpgsign = true
-[tag]
-	### Automatically sign tags
-	# git config --global tag.gpgsign true
-	gpgsign = true
-[gpg "ssh"]
-	## git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
-	allowedSignersFile = ~/.ssh/allowed_signers
+### Security (SSH Signing only supported with git>=2.34)
+#[user]
+#	## git config --global user.signingkey /PATH/TO/.SSH/KEY.PUB
+#	signingkey = ~/.ssh/github/id_ed25519.pub
+#[gpg]
+#	## git config --global gpg.format ssh
+#	format = ssh
+#[commit]
+#	### Automatically sign commits
+#	## git config --global commit.gpgsign true
+#	gpgsign = true
+#[tag]
+#	### Automatically sign tags
+#	# git config --global tag.gpgsign true
+#	gpgsign = true
+#[gpg "ssh"]
+#	## git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
+#	allowedSignersFile = ~/.ssh/allowed_signers
 
 ### Misc Functionality
 [pull]
