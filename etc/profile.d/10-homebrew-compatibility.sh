@@ -8,7 +8,7 @@ __homebrew_compatibility() {
   local legacy_os="${HOMEBREW_LEGACY_OS:-false}" default_prefix='/opt/homebrew' legacy_prefix='/usr/local'
   local prefix="${HOMEBREW_PREFIX:-$default_prefix}"
   if [ "$(uname -s)" = "Darwin" ] ; then
-    test "$(/usr/bin/sw_vers -productVersion | awk -F'.' '{print $1}')" -gt "13" || HOMEBREW_LEGACY_OS=true
+    test "$(/usr/bin/sw_vers -productVersion | awk -F'.' '{print $1}')" -gt "13" || legacy_os=true
     [ "${legacy_os:-false}" != "true" ] || prefix="$legacy_prefix"
   fi
   HOMEBREW_BREW_PATH="${prefix}/bin/brew"
