@@ -92,6 +92,7 @@ __download_homebrew() {
     [ "${DEBUG:-false}" = "true" ] || \
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   fi
+  [ "${DEBUG:-false}" = "true" ] && return
   command -v "${HOMEBREW_BREW_PATH}" >/dev/null 2>&1 || return
 }
 
@@ -158,7 +159,7 @@ __options() {
   while [ $# -gt 0 ]; do
     case "$1" in
       -h | --help) usage ;;
-      -l | --legacy-os) HOMEBREW_LEGACY_OS="${2:-true}" __homebrew_compatibility ;;
+      -l | --legacy-os) HOMEBREW_LEGACY_OS=true __homebrew_compatibility ;;
       -s | --shell-only) SHELL_ONLY="${SHELL_ONLY:-true}" ;;
       *)
         log_warn "Unrecognized option: '$1'"
