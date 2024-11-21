@@ -120,10 +120,11 @@ __create_dirs_and_links() {
   __create_dir "${BASE_DIR}/Data" "true" "y"
   __create_bin "${BASE_DIR}/lib" "${BASE_DIR}/dist/bin"
   __create_symlink "${BASE_DIR}/dist/bin" "${BASE_DIR}/bin"
-  __create_symlink "${BASE_DIR}/bin" "$(dirname $XDG_DATA_HOME)/bin"
-  __create_symlink "${BASE_DIR}/etc/profile.d" "$(dirname $XDG_DATA_HOME)/profile.d"
-  __create_symlink "${BASE_DIR}/.editorconfig" "$HOME/.editorconfig"
+  __create_symlink "${BASE_DIR}/bin" "$(dirname ${XDG_DATA_HOME})/bin"
+  __create_symlink "${BASE_DIR}/etc/profile.d" "$(dirname ${XDG_DATA_HOME})/profile.d"
+  __create_symlink "${BASE_DIR}/.editorconfig" "${HOME}/.editorconfig"
   __create_symlink "${BASE_DIR}/setup/brew/Brewfile" "$HOME/Brewfile"
+  __create_symlink "${BASE_DIR}" "${HOME}/$(basename ${BASE_DIR})"
 }
 
 __brewfile() {
