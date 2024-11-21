@@ -293,22 +293,19 @@ __handle_windows() {
 }
 
 __main_git() {
-  local primary="${1:-""}"
   while [ $# -gt 0 ]; do
-    shift
-    case $primary in
+    case "$1" in
       'commit') shift; __git_commit "$@";;
       'status') __git_status;;
       *) ;;
     esac
+    shift
   done
 }
 
 __main_install() {
-  local primary="${1:-""}"
   if [ $# -gt 0 ]; then
-    shift
-    case $primary in
+    case "$1" in
       'all') __configure_profiles;;
       'bash') __handle_basic_bash;;
       'cron') __handle_cron;;
@@ -318,21 +315,23 @@ __main_install() {
       'root') __handle_root;;
       *) ;;
     esac
+    shift
   fi
 }
 
 __main_option_choice() {
-  local primary="${1:-""}"
+  local sub=""
   while [ $# -gt 0 ]; do
-    shift
-    case $primary in
+    case "$1 "in
       '-b'|'--build') UPDATE=true __handle_build;;
       '-c'|'--cron') __handle_cron;;
       '-g'|'--git') shift; __main_git "$@";;
-      '-i'|'--install') secondary="${2:-""}"; shift; __main_install "$secondary";;
-      '-u'|'--update') secondary="${2:-""}"; shift; UPDATE=true __main_install "$secondary" "$@";;
+      '-i'|'--install') sub="${2:-""}"; shift; __main_install "$sub";;
+      '-u'|'--update') sub="${2:-""}"; shift; UPDATE=true __main_install "$sub" "$@";;
       *) ;;
     esac
+    unset sub
+    shift
   done
 }
 
