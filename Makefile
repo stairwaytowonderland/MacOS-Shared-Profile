@@ -192,11 +192,11 @@ test-install-bashrc: DEBUG=true
 test-install-bashrc: install-bashrc
 
 .PHONY: install-skel
-install-skel: install-bashrc .install-skell ## Install all skel files; Does not overwrite
+install-skel: .install-skel ## Install all skel files; Does not overwrite
 
 .PHONY: test-install-skel
 test-install-skel: DEBUG=true
-test-install-skel: install-skel
+test-install-skel: .install-skel
 
 ### Update
 
@@ -208,7 +208,7 @@ test-update-all: DEBUG = true
 test-update-all: .update-all
 
 .PHONY: update-bashrc
-update-bashrc: git-commit-home .update-bashrc ## Install bash (profile) files only
+update-bashrc: git-commit-home .update-skel ## Install bash (profile) files only
 
 .PHONY: test-update-bashrc
 test-update-bashrc: DEBUG=true
@@ -219,7 +219,7 @@ update-skel: git-commit-home .update-bashrc ## Install all skel files
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
-test-update-skel: .update-bashrc .update-env .update-git
+test-update-skel: .update-skel
 
 ### Maintain
 
