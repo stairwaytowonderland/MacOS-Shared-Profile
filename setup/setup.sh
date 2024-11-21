@@ -59,10 +59,10 @@ __set_permissions() {
 __create_dir() {
   local target="$1" permissions_enabled="${2:-false}" permissions_default="${3:-n}"
   if is "${UPDATE:-false}" || ! test -r "$target"; then
-    if is "$permissions_enabled" && __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
+    if __confirm "Directory '$target' doesn't exist. Create it?" "y" ; then
       log_info "Creating target '$target'"
       is_debug || test -r "$target" || mkdir -p "$target"
-      __set_permissions "$target" "$permissions_default"
+      ! is "$permissions_enabled" || __set_permissions "$target" "$permissions_default"
     fi
   else
     log_note "The target '$target' already exists."
