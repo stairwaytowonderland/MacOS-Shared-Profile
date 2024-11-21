@@ -225,6 +225,7 @@ test-update-skel: .update-skel
 
 .PHONY: git-commit-home
 git-commit-home: .home-commit ## Git commit handled files in $HOME folder
+	@printf "Some files may have been changed during update ...\n\tTo check the status of those changes, run \`\033[1m%s\033[0m\`.\n\tIf you approve of those changes, run \`\033[1m%s\033[0m\` to commit them.\n" "make git-commit-status" "make git-commit-home"
 
 .PHONY: test-commit
 test-commit: DEBUG = true
