@@ -223,7 +223,7 @@ __gitconfig_nag() {
 __git_commit() {
   local targets="$@" target=""
   local message="Updating skel files ..."
-  git init "$HOME" && git branch -m main
+  git -C "$HOME" init && git -C "$HOME" branch -m main
   for f in $targets; do
     target="${HOME}/$(basename $f)"
     message=$(cat <<EOF
