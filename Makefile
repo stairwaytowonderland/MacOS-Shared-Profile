@@ -107,7 +107,7 @@ test-configure: configure ## Test configuration script
 
 .PHONY: .commit-nag
 .commit-nag:
-	@printf "Some files may have been changed during update ...\n\tTo check the status of those changes, run \`\033[1m%s\033[0m\`.\n\tIf you approve of those changes, run \`\033[1m%s\033[0m\` to commit them.\n" "make git-commit-status" "make git-commit-home"
+	@printf "Some files may have been changed during update ...\n\tTo check the status of those changes, run \`\033[1m%s\033[0m\`.\n\tIf you approve of those changes, run \`\033[1m%s\033[0m\` to commit them.\n" "make -C $(SCRIPT_DIR) git-status-home" "make -C $(SCRIPT_DIR) git-commit-home"
 
 .PHONY: .build
 .build:
