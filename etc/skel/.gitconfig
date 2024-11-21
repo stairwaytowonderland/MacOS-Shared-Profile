@@ -25,6 +25,9 @@
 
 ################################################################################
 
+[init]
+	defaultBranch = main
+
 [user]
 	## git config --global user.name "Full Name"
 	name = Full Name
