@@ -25,18 +25,7 @@
 
 ################################################################################
 
-[init]
-	defaultBranch = main
-
-[user]
-	## git config --global user.name "Full Name"
-	name = Full Name
-	## git config --global user.email "email@example.com"
-	email = email@example.com
-	## git config --global user.username "your_user-name"
-	# username = your_user-name
-
-### Core Functionality
+### Helper
 [core]
 	editor = ~/.local/bin/bbeditor
 [diff]
@@ -65,7 +54,20 @@
 #	## git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
 #	allowedSignersFile = ~/.ssh/allowed_signers
 
-### Misc Functionality
+### Core
+
+[user]
+	## git config --global user.name "Full Name"
+	name = Full Name
+	## git config --global user.email "email@example.com"
+	email = email@example.com
+	## git config --global user.username "your_user-name"
+	# username = your_user-name
+
+[init]
+	## git config --global init.defaultBranch main
+	defaultBranch = main
+
 [pull]
 	## git config --global pull.rebase true
 	rebase = true

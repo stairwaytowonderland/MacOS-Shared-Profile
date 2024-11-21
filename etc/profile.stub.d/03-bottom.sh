@@ -1,5 +1,5 @@
-if test -x /opt/homebrew/bin/brew; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
+if test -x "${HOMEBREW_BREW_PATH}"; then
+  eval "$($HOMEBREW_BREW_PATH shellenv)"
 
   export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
   test -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" && . "$(brew --prefix)/etc/profile.d/bash_completion.sh"

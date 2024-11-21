@@ -11,31 +11,25 @@ fi
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
 
-HOMEBREW_LEGACY_OS=false
-HOMEBREW_DEFAULT_PREFIX=/opt/homebrew
-HOMEBREW_LEGACY_PREFIX=/usr/local
-HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-$HOMEBREW_DEFAULT_PREFIX}"
-HOMEBREW_BREW_PATH="${HOMEBREW_PREFIX}/bin/brew"
-HOMEBREW_BASH_PATH="${HOMEBREW_PREFIX}/bin/bash"
-
 SHELL_CONFIGURED=false
 
-__init() {
-  # Homebrew path (brew --prefix / $HOMEBREW_PREFIX) is different on macOS 13.x and below
-  if test "${HOMEBREW_LEGACY_OS:-false}" = "true" || \
-    test "$(/usr/bin/sw_vers -productVersion | awk -F'.' '{print $1}')" -le "13" ; then
-    (set -x; HOMEBREW_PREFIX="${HOMEBREW_LEGACY_PREFIX}") && \
-      HOMEBREW_PREFIX="${HOMEBREW_LEGACY_PREFIX}"
-  else
-    (set -x; HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-$HOMEBREW_DEFAULT_PREFIX}") && \
-      HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-$HOMEBREW_DEFAULT_PREFIX}"
+# Compatibility Check
+
+HOMEBREW_BREW_PATH=""
+HOMEBREW_BASH_PATH=""
+
+# Homebrew path (brew --prefix / $HOMEBREW_PREFIX) is different on macOS 13.x and below
+__homebrew_compatibility() {
+  local legacy_os="${HOMEBREW_LEGACY_OS:-false}" default_prefix='/opt/homebrew' legacy_prefix='/usr/local'
+  local prefix="${HOMEBREW_PREFIX:-$default_prefix}"
+  if [ "$(uname -s)" = "Darwin" ] ; then
+    test "$(/usr/bin/sw_vers -productVersion | awk -F'.' '{print $1}')" -gt "13" || HOMEBREW_LEGACY_OS=true
+    [ "${legacy_os:-false}" != "true" ] || prefix="$legacy_prefix"
   fi
-  (set -x; HOMEBREW_BREW_PATH="${HOMEBREW_PREFIX}/bin/brew") && \
-    HOMEBREW_BREW_PATH="${HOMEBREW_PREFIX}/bin/brew"
-  (set -x; HOMEBREW_BASH_PATH="${HOMEBREW_PREFIX}/bin/bash") && \
-    HOMEBREW_BASH_PATH="${HOMEBREW_PREFIX}/bin/bash"
+  HOMEBREW_BREW_PATH="${prefix}/bin/brew"
+  HOMEBREW_BASH_PATH="${prefix}/bin/bash"
+  [ "${1:-false}" != "true" ] || >&2 echo "$prefix"
 }
-__init
 
 # Core
 
@@ -137,6 +131,7 @@ __configure_shell() {
 # Main
 
 main() {
+  __homebrew_compatibility
   __options "$@"
   SHELL_ONLY="${2-false}" __configure_shell
 }
@@ -145,7 +140,7 @@ __options() {
   while [ $# -gt 0 ]; do
     case "$1" in
       -h | --help) usage ;;
-      -l | --legacy-os) HOMEBREW_LEGACY_OS="${2:-true}" __init; shift ;;
+      -l | --legacy-os) HOMEBREW_LEGACY_OS="${2:-true}" __homebrew_compatibility; shift ;;
       -s | --shell-only) SHELL_ONLY="${2-false}" __configure_shell && exit $? || exit $? ;;
       *)
         log_warn "Unrecognized option: '$1'"
