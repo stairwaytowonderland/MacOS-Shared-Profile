@@ -83,7 +83,7 @@ test-configure: configure ## Test configuration script
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update bash
 
 .PHONY: .update-skel
-.update-skel:
+.update-skel: .update-bashrc
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update env
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update git
 
@@ -192,7 +192,7 @@ test-install-bashrc: DEBUG=true
 test-install-bashrc: install-bashrc
 
 .PHONY: install-skel
-install-skel: install-bashrc .install-env .install-git ## Install all skel files; Does not overwrite
+install-skel: install-bashrc .install-skell ## Install all skel files; Does not overwrite
 
 .PHONY: test-install-skel
 test-install-skel: DEBUG=true
@@ -215,7 +215,7 @@ test-update-bashrc: DEBUG=true
 test-update-bashrc: .update-bashrc
 
 .PHONY: update-skel
-update-skel: git-commit-home update-bashrc .update-env .update-git ## Install all skel files
+update-skel: git-commit-home .update-bashrc ## Install all skel files
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
