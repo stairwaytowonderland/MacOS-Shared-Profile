@@ -226,14 +226,15 @@ __git_commit() {
   git -C "$HOME" init && git -C "$HOME" branch -m main
   for f in $targets; do
     target="${HOME}/$(basename $f)"
-    message=$(cat <<EOF
+    if test -r "$target" ; then
+      message=$(cat <<EOF
 $message
-  - $f
+  - $target
 EOF
 )
-    log_info "Staging '$target'"
-    is_debug || git -C "$HOME" add "${HOME}/$(basename $f)" 2>/dev/null || true
-    unset target
+      log_info "Staging '$target'"
+      is_debug || git -C "$HOME" add "$target" 2>/dev/null || true
+    fi
   done
   log_success "Committing with message: '$message'"
   is_debug || git -C "$HOME" commit -m "$message" 2>/dev/null || true
