@@ -322,7 +322,7 @@ __main_install() {
 __main_option_choice() {
   local sub=""
   while [ $# -gt 0 ]; do
-    case "$1 "in
+    case "$1" in
       '-b'|'--build') UPDATE=true __handle_build;;
       '-c'|'--cron') __handle_cron;;
       '-g'|'--git') shift; __main_git "$@";;
