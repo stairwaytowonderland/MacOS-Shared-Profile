@@ -4,12 +4,13 @@
 
 ```bash
 git init
-git remote add origin git@github.com:stairwaytowonderland/MacOS-Shared-Profile.git
+git remote add origin https://github.com/stairwaytowonderland/MacOS-Shared-Profile.git
 git fetch
 git pull origin main
 ```
 ## Run setup
 
 ```bash
+make configure
 make install
 ```

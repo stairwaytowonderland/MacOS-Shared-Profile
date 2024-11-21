@@ -11,14 +11,31 @@ fi
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
 
-# Homebrew path (brew --prefix / $HOMEBREW_PREFIX) is different on macOS 13.0 and below ('/usr/local' instead of '/opt/homebrew')
-if test "$(/usr/bin/sw_vers -productVersion | awk -F'.' '{print $1}')" -gt "13" ; then
-  HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/opt/homebrew}"
-else
-  HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-/usr/local}"
-fi
+HOMEBREW_LEGACY_OS=false
+HOMEBREW_DEFAULT_PREFIX=/opt/homebrew
+HOMEBREW_LEGACY_PREFIX=/usr/local
+HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-$HOMEBREW_DEFAULT_PREFIX}"
 HOMEBREW_BREW_PATH="${HOMEBREW_PREFIX}/bin/brew"
 HOMEBREW_BASH_PATH="${HOMEBREW_PREFIX}/bin/bash"
+
+SHELL_CONFIGURED=false
+
+__init() {
+  # Homebrew path (brew --prefix / $HOMEBREW_PREFIX) is different on macOS 13.x and below
+  if test "${HOMEBREW_LEGACY_OS:-false}" = "true" || \
+    test "$(/usr/bin/sw_vers -productVersion | awk -F'.' '{print $1}')" -le "13" ; then
+    (set -x; HOMEBREW_PREFIX="${HOMEBREW_LEGACY_PREFIX}") && \
+      HOMEBREW_PREFIX="${HOMEBREW_LEGACY_PREFIX}"
+  else
+    (set -x; HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-$HOMEBREW_DEFAULT_PREFIX}") && \
+      HOMEBREW_PREFIX="${HOMEBREW_PREFIX:-$HOMEBREW_DEFAULT_PREFIX}"
+  fi
+  (set -x; HOMEBREW_BREW_PATH="${HOMEBREW_PREFIX}/bin/brew") && \
+    HOMEBREW_BREW_PATH="${HOMEBREW_PREFIX}/bin/brew"
+  (set -x; HOMEBREW_BASH_PATH="${HOMEBREW_PREFIX}/bin/bash") && \
+    HOMEBREW_BASH_PATH="${HOMEBREW_PREFIX}/bin/bash"
+}
+__init
 
 # Core
 
@@ -103,17 +120,40 @@ __update_shell() {
   fi
 }
 
-configure_shell() {
-  __install_brew
-  __update_shell
-  log_success "Configure complete!"
-  printf "\n\t%s\n\n" "You may now run \`make install\`"
+__configure_shell() {
+  if ! test "${SHELL_CONFIGURED:-false}" = "true" ; then
+    if test "${SHELL_ONLY:-false}" = "true" ; then
+      __update_shell
+    else
+      __install_brew
+      __update_shell
+      log_success "Configure complete!"
+      printf "\n\t%s\n\n" "You may now run \`make install\`"
+    fi
+    SHELL_CONFIGURED=true
+  fi
 }
 
 # Main
 
 main() {
-  configure_shell
+  __options "$@"
+  SHELL_ONLY="${2-false}" __configure_shell
+}
+
+__options() {
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -h | --help) usage ;;
+      -l | --legacy-os) HOMEBREW_LEGACY_OS="${2:-true}" __init; shift ;;
+      -s | --shell-only) SHELL_ONLY="${2-false}" __configure_shell && exit $? || exit $? ;;
+      *)
+        log_warn "Unrecognized option: '$1'"
+        usage 1
+        ;;
+    esac
+    shift
+  done
 }
 
 usage() {
@@ -124,17 +164,5 @@ Usage: configure.sh [options]
 EOS
   exit "${1:-0}"
 }
-
-while [ $# -gt 0 ]; do
-  case "$1" in
-    -h | --help) usage ;;
-    -s | --shell-only) __update_shell; exit 0;;
-    *)
-      log_warn "Unrecognized option: '$1'"
-      usage 1
-      ;;
-  esac
-  shift
-done
 
 main "$@"
