@@ -7,17 +7,19 @@
 # ssh -V
 
 ### TL;DR
+# git config --global init.defaultBranch true
+# git config --global pull.rebase true
 # git config --global user.name "Full Name"
 # git config --global user.email "email@example.com"
+
+# git config --global user.signingkey ~/.ssh/path/to/key.pub
 # git config --global gpg.format ssh
-# git config --global user.signingkey ~/PATH/TO/.SSH/KEY.PUB
 # git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
 # git config --global commit.gpgsign true
 # git config --global tag.gpgsign true
-# git config --global pull.rebase true
 
 ### Generate ~/.ssh/allowed_signers
-# echo "$(git config --get user.email) namespaces=\"git\" $(cat /PATH/TO/.SSH/KEY.PUB)" >> ~/.ssh/allowed_signers
+# echo "$(git config --get user.email) namespaces=\"git\" $(cat ~/.ssh/path/to/key.pub)" >> ~/.ssh/allowed_signers
 
 ### Verify
 # git log --show-signature
@@ -43,7 +45,7 @@
 	## git config --global user.username "your_user-name"
 	# username = your_user-name
 
-### Helper
+### Editor and Difftool
 
 [core]
 	editor = ~/.local/bin/bbeditor
