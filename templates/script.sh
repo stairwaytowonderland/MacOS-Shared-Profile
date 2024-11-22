@@ -50,16 +50,6 @@ is_false() {
 }
 is() { is_true $1 2>/dev/null || return $?; }
 
-# Value Checks
-
-is_equal() {
-  local success="${FALSE:-false}"
-  [ "$1" != "$2" ] || success="${TRUE:-true}"
-  errcho $success
-  $success || return $?
-}
-equals() { is_equal "$@" 2>/dev/null; }
-
 # Fancy Logging
 
 logmsg() {

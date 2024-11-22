@@ -11,7 +11,6 @@
 # git config --global pull.rebase true
 # git config --global user.name "Full Name"
 # git config --global user.email "email@example.com"
-
 # git config --global user.signingkey ~/.ssh/path/to/key.pub
 # git config --global gpg.format ssh
 # git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers

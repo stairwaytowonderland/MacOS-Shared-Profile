@@ -29,14 +29,48 @@ is_false() {
 }
 is() { is_true $1 2>/dev/null || return $?; }
 
-# Value Checks
-is_equal() {
-  local success=false
-  [ "$1" != "$2" ] || success=true
-  errcho $success
-  $success || return $?
+# POSIX Compliant Decimal Comparison
+# Simple decimal comparison function.
+# Last (4th) argument defaults to false; Setting to true will cause
+# the function to return 0 or 1 based on success or failure of the comparison,
+# causing an error code of 1 if the comparison fails.
+# Usage:
+# testd <value1> <value2> <operator> [true|false]
+# Example:
+# testd 1.0 1.1 eq
+# testd 1.0 1.1 eq false
+testd() {
+  local value1="${1-}"; shift
+  local operator="${1-}"; shift
+  local value2="${1-}"; shift
+  local result=0 err=0
+  case $operator in
+    eq) result=$(echo "${value1}==${value2}" | bc); err=$?;;
+    ne) result=$(echo "${value1}!=${value2}" | bc); err=$?;;
+    gt) result=$(echo "${value1}>${value2}" | bc); err=$?;;
+    ge) result=$(echo "${value1}>=${value2}" | bc); err=$?;;
+    lt) result=$(echo "${value1}<${value2}" | bc); err=$?;;
+    le) result=$(echo "${value1}<=${value2}" | bc); err=$?;;
+    *) result=$(echo "${value1}=${value2}" | bc); err=$?;;
+  esac
+  [ $err -eq 0 ] || return $err
+  case $result in
+    1) errcho true; [ "true" != "${1:-false}" ] || return 0;;
+    0) errcho false; [ "true" != "${1:-false}" ] || return 1;;
+    *) errcho "Bad number"; return 3;;
+  esac
 }
-equals() { is_equal "$@" 2>/dev/null; }
+
+# Designed to produce a decimal number version from a semantic version
+# Usage:
+# versiond "<a string with a semantic version in it>" [version index] [version string delimeter] [version number delimeter]
+# Example:
+# versiond "$(git --version)"
+# versiond "$(git --version)" 3 . ' '
+versiond() {
+  local str="${1-}"
+  echo "${str#v}" | awk -F"${4:- }" -v num="${2:-3}" '{print $num}' | awk -F"${3:-.}" '{print $1"."$2}'
+}
 
 # Fancy Logging
 logmsg() {
