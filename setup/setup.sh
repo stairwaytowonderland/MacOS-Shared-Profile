@@ -2,10 +2,15 @@
 
 set -eu
 
-if [ -f "$0" ]; then
-  SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+if test -f "$0" ; then
+  SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+elif test "${0#-}" = "bash" || test "${0#-}" = "zsh" || test -n "$BASH_SOURCE" ; then
+  # The file is being sourced
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" >/dev/null 2>&1 && pwd -P)" # zsh compatible
 else
-  SCRIPT_DIR="$(pwd)"
+  # The file is being sourced with 'sh'
+  # For SCRIPT_DIR to be correct, the file must be sourced from it's containing directory
+  SCRIPT_DIR=$(pwd -P)
 fi
 
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"

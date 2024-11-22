@@ -208,11 +208,11 @@ logmsg() {
   label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
   printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
 }
-log_note() { logmsg note "$1"; }
-log_info() { logmsg info "$1"; }
-log_warn() { logmsg warn "$1"; }
-log_success() { logmsg success "$1"; }
-log_error() { logmsg error "$1"; }
+log_note() { logmsg note "$@"; }
+log_info() { logmsg info "$@"; }
+log_warn() { logmsg warn "$@"; }
+log_success() { logmsg success "$@"; }
+log_error() { logmsg error "$@"; }
 
 # Shell System Checks
 shellos() {
@@ -264,7 +264,7 @@ HOMEBREW_BASH_PATH=""
 
 # Homebrew path (brew --prefix / $HOMEBREW_PREFIX) is different on macOS 13.x and below
 # Check official homebrew install.sh for updated paths: https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh
-__homebrew_compatibility() {
+homebrew_compatibility() {
   local uname="$(uname -s)" uname_machine="$(uname -m)"
   local legacy_os="${HOMEBREW_LEGACY_OS:-false}" default_prefix="" legacy_prefix="" prefix=""
   local is_darwin=$(test "$uname" = "Darwin" && echo true || echo false)
@@ -533,10 +533,15 @@ alias cdr='cd $(realpath)'
 # ------------------------------------------------------------
 # -- END --
 
-test -n "${HOMEBREW_BREW_PATH}" || __homebrew_compatibility
+test -n "${HOMEBREW_BREW_PATH}" || homebrew_compatibility
 
 if test -x "${HOMEBREW_BREW_PATH}"; then
   eval "$($HOMEBREW_BREW_PATH shellenv)"
+
+  if test "$(brew --prefix)/bin/brew" != "${HOMEBREW_BREW_PATH}" ; then
+    log_error "'$(brew --prefix)/bin/bash' doesn't match '${HOMEBREW_BREW_PATH}'" "BREW_PREFIX_ERROR"
+    test true = false || return
+  fi
 
   export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
   test -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" && . "$(brew --prefix)/etc/profile.d/bash_completion.sh"

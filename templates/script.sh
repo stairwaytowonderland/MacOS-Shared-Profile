@@ -2,10 +2,18 @@
 
 set -eu
 
-if [ -f "$0" ]; then
-  SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+if test -f "$0" ; then
+  SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+elif test "${0#-}" = "bash" || test "${0#-}" = "zsh" ; then
+  # The file is being sourced
+  # BASH_SOURCE requires Bash
+  # SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" >/dev/null 2>&1 && pwd)"
+  # SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[${#BASH_SOURCE[@]} - 1]}")" >/dev/null 2>&1 && pwd)"
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" >/dev/null 2>&1 && pwd -P)" # zsh compatible
 else
-  SCRIPT_DIR="$(pwd)"
+  # The file is being sourced with 'sh'
+  # For SCRIPT_DIR to be correct, the file must be sourced from it's containing directory
+  SCRIPT_DIR=$(pwd -P)
 fi
 
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
@@ -70,11 +78,11 @@ logmsg() {
   label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
   printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
 }
-log_note() { logmsg note "$1"; }
-log_info() { logmsg info "$1"; }
-log_warn() { logmsg warn "$1"; }
-log_success() { logmsg success "$1"; }
-log_error() { logmsg error "$1"; }
+log_note() { logmsg note "$@"; }
+log_info() { logmsg info "$@"; }
+log_warn() { logmsg warn "$@"; }
+log_success() { logmsg success "$@"; }
+log_error() { logmsg error "$@"; }
 
 # GNU Equivalents
 __realpath() (

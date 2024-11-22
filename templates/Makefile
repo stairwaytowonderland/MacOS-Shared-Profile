@@ -6,7 +6,7 @@
 
 SHELL := bash
 UNAME := $(shell uname -s)
-SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
+SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd -P))
 
 ####################
 # Standard

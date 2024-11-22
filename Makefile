@@ -6,7 +6,7 @@
 
 SHELL := bash
 UNAME := $(shell uname -s)
-SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd))
+SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd -P))
 
 ####################
 # Standard
@@ -28,22 +28,22 @@ list: ## List public targets
 	@echo $(PUBLIC_TARGETS) | xargs -n3 printf "%-26s%-26s%-26s%s\n"
 
 .PHONY: clean
-clean: DIST_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
-clean: SKEL_BASE_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name '.*' -exec sh -c ' \
+clean: DIST_FILES ?= $(shell find "$(SCRIPT_DIR)/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
+clean: SKEL_BASE_FILES ?= $(shell find "$(SCRIPT_DIR)/etc/skel" -name '.*' -exec sh -c ' \
 	for file do \
 		basename $$file; \
 	done' sh {} +)
-clean: HOME_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name '.*' -exec sh -c ' \
+clean: HOME_FILES ?= $(shell find "$(SCRIPT_DIR)/etc/skel" -name '.*' -exec sh -c ' \
 	for file do \
 		! test -r "$(HOME)/$$(basename $$file)" || echo "$(HOME)/$$(basename $$file)"; \
 	done' sh {} +)
-clean: TAR_FILE ?= "$$(realpath $(SCRIPT_DIR))/Backup/$(USER)-$$(date +%m%d%y%H%M%S).tar.gz"
+clean: TAR_FILE ?= "$(SCRIPT_DIR)/Backup/$(USER)-$$(date +%m%d%y%H%M%S).tar.gz"
 clean: git-commit-home ## Clean 'dist/' and $HOME; Removes any files added by the installer
 	@echo "$(SKEL_BASE_FILES)" | xargs tar -C "$(HOME)" -czvf "$(TAR_FILE)" -T -
 	$(RM) $(HOME_FILES)
 
 .PHONY: permissions
-permissions: DIRS ?= $$(realpath $(SCRIPT_DIR)/Data) $$(realpath $(SCRIPT_DIR)/Tools)
+permissions: DIRS ?= $(SCRIPT_DIR)/Data $(SCRIPT_DIR)/Tools
 permissions: ## Reset correct permissions on handled directories
 	@for d in $(DIRS) ; do \
 		if test -d "$$d" ; then \
@@ -92,12 +92,12 @@ test-configure: configure ## Test configuration script
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update all
 
 .PHONY: .update-dist
-.update-dist: DIST_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
+.update-dist: DIST_FILES ?= $(shell find "$(SCRIPT_DIR)/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
 .update-dist:
 	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --update dist $(DIST_FILES)
 
 .PHONY: .home-commit
-.home-commit: SKEL_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name ".*" -exec echo {} \;)
+.home-commit: SKEL_FILES ?= $(shell find "$(SCRIPT_DIR)/etc/skel" -name ".*" -exec echo {} \;)
 .home-commit:
 	@set -x; BASE_DIR=$(SCRIPT_DIR) DEBUG=$(DEBUG) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/setup.sh --git commit $(SKEL_FILES)
 
@@ -117,20 +117,20 @@ test-configure: configure ## Test configuration script
 .deploy: .update-dist
 
 .PHONY: .clean-dist
-.clean-dist: DIST_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
+.clean-dist: DIST_FILES ?= $(shell find "$(SCRIPT_DIR)/dist" -type f -name ".*" -mindepth 1 -maxdepth 1 -exec echo {} \;)
 .clean-dist:
 	$(RM) $(DIST_FILES)
 
 .PHONY: .clean-home
-.clean-home: SKEL_BASE_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name '.*' -exec sh -c ' \
+.clean-home: SKEL_BASE_FILES ?= $(shell find "$(SCRIPT_DIR)/etc/skel" -name '.*' -exec sh -c ' \
 	for file do \
 		basename $$file; \
 	done' sh {} +)
-.clean-home: HOME_FILES ?= $(shell find "$$(realpath $(SCRIPT_DIR))/etc/skel" -name '.*' -exec sh -c ' \
+.clean-home: HOME_FILES ?= $(shell find "$(SCRIPT_DIR)/etc/skel" -name '.*' -exec sh -c ' \
 	for file do \
 		! test -r "$(HOME)/$$(basename $$file)" || echo "$(HOME)/$$(basename $$file)"; \
 	done' sh {} +)
-.clean-home: TAR_FILE ?= "$$(realpath $(SCRIPT_DIR))/Backup/$(USER)-$$(date +%m%d%y%H%M%S).tar.gz"
+.clean-home: TAR_FILE ?= "$(SCRIPT_DIR)/Backup/$(USER)-$$(date +%m%d%y%H%M%S).tar.gz"
 .clean-home:
 	@echo "$(SKEL_BASE_FILES)" | xargs tar -C "$(HOME)" -czvf "$(TAR_FILE)" -T -
 	$(RM) $(HOME_FILES)

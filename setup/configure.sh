@@ -2,14 +2,22 @@
 
 set -eu
 
-if [ -f "$0" ]; then
-  SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+if test -f "$0" ; then
+  SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+elif test "${0#-}" = "bash" || test "${0#-}" = "zsh" || test -n "$BASH_SOURCE" ; then
+  # The file is being sourced
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-${(%):-%x}}")" >/dev/null 2>&1 && pwd -P)" # zsh compatible
 else
-  SCRIPT_DIR="$(pwd)"
+  # The file is being sourced with 'sh'
+  # For SCRIPT_DIR to be correct, the file must be sourced from it's containing directory
+  SCRIPT_DIR=$(pwd -P)
 fi
 
 BASE_DIR="${BASE_DIR:-$(dirname $SCRIPT_DIR)}"
 UNAME="${UNAME:-$(uname -s)}"
+
+test -r "$BASE_DIR/etc/profile.d/01-colors.sh" && . "$BASE_DIR/etc/profile.d/01-colors.sh"
+test -r "$BASE_DIR/etc/profile.d/02-functions.sh" && . "$BASE_DIR/etc/profile.d/02-functions.sh"
 
 SHELL_CONFIGURED=false
 
@@ -114,8 +122,8 @@ __configure_shell() {
 # Main
 
 main() {
-  __homebrew_compatibility
   __options "$@"
+  HOMEBREW_LEGACY_OS="${HOMEBREW_LEGACY_OS:-false}" homebrew_compatibility
   SHELL_ONLY="${SHELL_ONLY:-false}" __configure_shell
 }
 
@@ -123,7 +131,7 @@ __options() {
   while [ $# -gt 0 ]; do
     case "$1" in
       -h | --help) usage ;;
-      -l | --legacy-os) HOMEBREW_LEGACY_OS=true __homebrew_compatibility ;;
+      -l | --legacy-os) HOMEBREW_LEGACY_OS=true ;;
       -s | --shell-only) SHELL_ONLY="${SHELL_ONLY:-true}" ;;
       *)
         log_warn "Unrecognized option: '$1'"
