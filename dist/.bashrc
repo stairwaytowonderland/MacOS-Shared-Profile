@@ -283,13 +283,14 @@ shellos() {
   errcho "${uname}:${os}:${os_like}"
 }
 
-is_linux() { equals "$(shellos 2>&1 | awk -F':' '{print $1}')" "Linux"; }
+is_darwin() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "Darwin" >/dev/null 2>&1; }
+is_linux() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "Linux" >/dev/null 2>&1; }
+is_windows() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "MINGW64" >/dev/null 2>&1; }
+is_mac() { shellos 2>&1 | awk -F'|' '{print $1}' | awk -F':' '{print $2}' | grep -i "macos" >/dev/null 2>&1; }
 is_ubuntu() { shellos 2>&1 | awk -F'|' '{print $1}' | awk -F':' '{print $2}' | grep -i "ubuntu" >/dev/null 2>&1; }
 is_rhel() { shellos 2>&1 | awk -F'|' '{print $1}' | awk -F':' '{print $2}' | grep -i "rhel" >/dev/null 2>&1; }
 is_debian() { shellos 2>&1 | awk -F'|' '{print $2}' | awk -F':' '{print $1"."$2}' | grep -i "debian" >/dev/null 2>&1; }
 is_fedora() { shellos 2>&1 | awk -F'|' '{print $2}' | awk -F':' '{print $1"."$2}' | grep -i "fedora" >/dev/null 2>&1; }
-is_darwin() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "darwin" >/dev/null 2>&1; }
-is_windows() { shellos 2>&1 | awk -F':' '{print $1}' | grep -i "mingw64" >/dev/null 2>&1; }
 
 # Homebrew Compatibility Check
 
