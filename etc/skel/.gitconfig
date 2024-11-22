@@ -26,24 +26,6 @@
 
 ################################################################################
 
-### Core
-
-[init]
-	## git config --global init.defaultBranch main
-	defaultBranch = main
-
-[pull]
-	## git config --global pull.rebase true
-	rebase = true
-
-[user]
-	## git config --global user.name "Full Name"
-	name = Full Name
-	## git config --global user.email "email@example.com"
-	email = email@example.com
-	## git config --global user.username "your_user-name"
-	# username = your_user-name
-
 ### Editor and Difftool
 
 [core]
@@ -74,6 +56,24 @@
 #[gpg "ssh"]
 #	## git config --global gpg.ssh.allowedSignersFile ~/.ssh/allowed_signers
 #	allowedSignersFile = ~/.ssh/allowed_signers
+
+### Common Behaviors
+
+[init]
+	## git config --global init.defaultBranch main
+	defaultBranch = main
+
+[pull]
+	## git config --global pull.rebase true
+	rebase = true
+
+[user]
+	## git config --global user.name "Full Name"
+	name = Full Name
+	## git config --global user.email "email@example.com"
+	email = email@example.com
+	## git config --global user.username "your_user-name"
+	# username = your_user-name
 
 ################################################################################
 
