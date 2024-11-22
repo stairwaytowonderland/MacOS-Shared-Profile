@@ -14,9 +14,22 @@ SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd -P))
 
 .PHONY: help
 help: ## Show this help.
+	@printf "%s \`%s'\n" "This is a partial list. For a full list use" "make help-all"
 	@printf "\033[1;4m%s\033[0m\n" "Usage"
-	@printf "(%s)\n" "Use \`make help' to show this message"
-	@printf "\033[1m%s\033[0m\n" "Please use \`make <target>' where <target> is one of:"
+	@printf "(%s \`%s' %s)\n" "Use" "make help" "to show this message"
+	@printf "(%s \`%s' %s)\n" "Use" "make help-all" "to for a full list test targets as well"
+	@printf "\033[1m%s \`%s' %s\033[0m\n" "Please use" "make <target>" "where <target> is one of:"
+	@grep '^[a-zA-Z]' $(MAKEFILE_LIST) | \
+    sort | \
+	grep -v test- | \
+    awk -F ':.*?## ' 'NF==2 {printf "\033[36m  %-26s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: help-all
+help-all: ## Show this help.
+	@printf "\033[1;4m%s\033[0m\n" "Usage"
+	@printf "(%s \`%s' %s)\n" "Use" "make help-all" "to show this message"
+	@printf "(%s \`%s' %s)\n" "Use" "make help" "for a partial list which excludes most test targets"
+	@printf "\033[1m%s \`%s' %s\033[0m\n" "Please use" "make <target>" "where <target> is one of:"
 	@grep '^[a-zA-Z]' $(MAKEFILE_LIST) | \
     sort | \
     awk -F ':.*?## ' 'NF==2 {printf "\033[36m  %-26s\033[0m %s\n", $$1, $$2}'
@@ -52,14 +65,6 @@ permissions: ## Reset correct permissions on handled directories
 			( set -x; sudo chmod -R 0775 "$$d"; sudo chmod 1775 "$$d" ); \
 		fi; \
 	done
-
-.PHONY: configure
-configure: ## Run configuration script
-	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/configure.sh
-
-.PHONY: test-configure
-test-configure: DEBUG=true
-test-configure: configure ## Test configuration script
 
 ####################
 # Helpers
@@ -139,19 +144,27 @@ test-configure: configure ## Test configuration script
 # Common
 ####################
 
+.PHONY: configure
+configure: ## Run configuration script
+	@set -x; DEBUG=$(DEBUG) BASE_DIR=$(SCRIPT_DIR) UNAME=$(UNAME) $(SCRIPT_DIR)/setup/configure.sh
+
+.PHONY: test-configure
+test-configure: DEBUG=true
+test-configure: configure ## Test configure
+
 .PHONY: install
 install: .install-full ## Full install
 
 .PHONY: test
 test: DEBUG = true
-test: install
+test: install ## Test install
 
 .PHONY: update
 update: update-bashrc ## Basic update
 
 .PHONY: test-update
 test-update: DEBUG = true
-test-update: .update
+test-update: .update ## Test update
 
 .PHONY: build
 build: FILE_NAME ?= dist/home/.bashrc
@@ -159,14 +172,14 @@ build: .build combined-profile ## Build files 'dist/.*'
 
 .PHONY: test-build
 test-build: DEBUG = true
-test-build: build
+test-build: build ## Test build
 
 .PHONY: deploy
 deploy: git-commit-home .deploy .commit-nag ## Copy files 'dist/.*' to $HOME; $HOME will get backed up with git
 
 .PHONY: test-deploy
 test-deploy: DEBUG = true
-test-deploy: .deploy
+test-deploy: .deploy ## Test deploy
 
 ####################
 # Misc
@@ -193,14 +206,14 @@ install-bashrc: .install-bashrc ## Install bash (profile) files only; Does not o
 
 .PHONY: test-install-bashrc
 test-install-bashrc: DEBUG=true
-test-install-bashrc: install-bashrc
+test-install-bashrc: install-bashrc ## Test install-bashrc
 
 .PHONY: install-skel
 install-skel: .install-skel ## Install all skel files; Does not overwrite
 
 .PHONY: test-install-skel
 test-install-skel: DEBUG=true
-test-install-skel: .install-skel
+test-install-skel: .install-skel ## Test install-skell
 
 ### Update
 
@@ -209,30 +222,42 @@ update-all: git-commit-home .update-all .commit-nag ## Full update
 
 .PHONY: test-update-all
 test-update-all: DEBUG = true
-test-update-all: .update-all
+test-update-all: .update-all ## Test update-all
 
 .PHONY: update-bashrc
-update-bashrc: git-commit-home .update-bashrc .commit-nag ## Install bash (profile) files only
+update-bashrc: git-commit-home .update-bashrc .commit-nag ## Update bash (profile) files only
 
 .PHONY: test-update-bashrc
 test-update-bashrc: DEBUG=true
-test-update-bashrc: .update-bashrc
+test-update-bashrc: .update-bashrc ## Test update-bashrc
 
 .PHONY: update-skel
-update-skel: git-commit-home .update-skel .commit-nag ## Install all skel files
+update-skel: git-commit-home .update-skel .commit-nag ## Update all skel files
 
 .PHONY: test-update-skel
 test-update-skel: DEBUG=true
-test-update-skel: .update-skel
+test-update-skel: .update-skel ## Test update-skel
+
+.PHONY: install-user
+install-user: install-skel ## Install user files; alias for install-skel
+
+.PHONY: test-install-user
+test-install-user: test-install-skel ## Test install-user; alias for test-install-skel
+
+.PHONY: update-user
+update-user: update-skel ## Update user files; alias for update-skel
+
+.PHONY: test-update-user
+test-update-user: test-update-skel ## Test update-user; alias for test-update-skel
 
 ### Maintain
 
 .PHONY: git-commit-home
 git-commit-home: .home-commit ## Git commit handled files in $HOME folder
 
-.PHONY: test-commit
-test-commit: DEBUG = true
-test-commit: git-commit-home
+.PHONY: test-commit-home
+test-commit-home: DEBUG = true
+test-commit-home: git-commit-home ## Test commit-home
 
 .PHONY: git-status-home
 git-status-home: .home-status ## Git status handled files in $HOME folder
@@ -242,4 +267,4 @@ rebuild: build deploy ## Build and then deploy 'dist/home'
 
 .PHONY: test-rebuild
 test-rebuild: DEBUG = true
-test-rebuild: rebuild
+test-rebuild: rebuild ## Test rebuild

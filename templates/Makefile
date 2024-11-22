@@ -15,8 +15,8 @@ SCRIPT_DIR := $(shell sed "s@$$HOME@~@" <<<$$(pwd -P))
 .PHONY: help
 help: ## Show this help.
 	@printf "\033[1;4m%s\033[0m\n" "Usage"
-	@printf "(%s)\n" "Use \`make help' to show this message"
-	@printf "\033[1m%s\033[0m\n" "Please use \`make <target>' where <target> is one of:"
+	@printf "(%s \`%s' %s)\n" "Use" "make help" "to show this message"
+	@printf "\033[1m%s \`%s' %s\033[0m\n" "Please use" "make <target>" "where <target> is one of:"
 	@grep '^[a-zA-Z]' $(MAKEFILE_LIST) | \
     sort | \
     awk -F ':.*?## ' 'NF==2 {printf "\033[36m  %-26s\033[0m %s\n", $$1, $$2}'
@@ -44,4 +44,4 @@ install: .install ## Install
 
 .PHONY: test
 test: DEBUG = true
-test: install
+test: install ## Test install
