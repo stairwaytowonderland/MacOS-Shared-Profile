@@ -24,31 +24,40 @@ UNAME="${UNAME:-$(uname -s)}"
 errcho() { >&2 printf "%s\n" "$@"; }
 abort() {
   local err="$?"
-  [ -n "${err}" -a "${err}" != "0" ] || err=1
+  test "$err" -ne "0" || err=1
   [ $# -gt 0 ] && errcho "$@" || errcho "There was a problem."
   exit $err
 }
 
 # Boolean Checks
 
-is_bool() {
+__is_bool() {
   case $1 in
     y|Y|yes|Yes|YES|n|N|no|No|NO|true|True|TRUE|false|False|FALSE|on|On|ON|off|Off|OFF|1|0) errcho true;;
     *) errcho false; return 1;;
   esac
 }
-is_true() {
+__is_true() {
   case $1 in
     y|Y|yes|Yes|YES|true|True|TRUE|on|On|ON|1) errcho true;;
     *) errcho false; return 1;;
   esac
 }
-is_false() {
+__is_false() {
   local err=0
-  is_bool $1 2>/dev/null && ! is_true $1 || err=$?
+  __is_bool $1 2>/dev/null && ! __is_true $1 || err=$?
   [ $err -gt 0 ] && errcho false && return $err || errcho true
 }
-is() { is_true $1 2>/dev/null || return $?; }
+is() { __is_true $1 2>/dev/null || return $?; }
+
+# Value Checks
+
+__is_value() {
+  local err=0
+  [ -n "${1-}" -a "$(echo "${1-}")x" != "x" ] || err=$?
+  [ $err -gt 0 ] && errcho false && return $err || errcho true
+}
+value() { __is_value $1 2>/dev/null || return $?; }
 
 # Fancy Logging
 
