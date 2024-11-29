@@ -96,7 +96,8 @@ C_BLUE_BOLD=$'\033[01;34m'; C_PURPLE_BOLD=$'\033[01;35m'; C_CYAN_BOLD=$'\033[01;
 #UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
 #MACOS_COREUTILS_ENABLED=false
-#DIRCOLORS_ENABLED=true
+#DIRCOLORS_ENABLED=false
+#DIRCOLORS_GENERATE_DB=false
 #LOG_MESSAGING_ENABLED=true
 
 if [ -r "$HOME/.local/bin/bbeditor" ]; then
@@ -593,7 +594,9 @@ if test -x "${HOMEBREW_BREW_PATH}"; then
   fi
 fi
 
-if is "${DIRCOLORS_ENABLED:-true}" && command -v dircolors >/dev/null 2>&1 ; then
+! is_windows || DIRCOLORS_ENABLED=true
+
+if is "${DIRCOLORS_ENABLED:-false}" && command -v dircolors >/dev/null 2>&1 ; then
   is "${DIRCOLORS_GENERATE_DB:-false}" || dircolors -p "${HOME}/.dircolors"
   if test -r "${HOME}/.dircolors" ; then
     eval "$(dircolors -b ${HOME}/.dircolors)"

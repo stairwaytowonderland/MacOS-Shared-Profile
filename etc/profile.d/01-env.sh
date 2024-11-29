@@ -25,7 +25,8 @@
 #UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
 #MACOS_COREUTILS_ENABLED=false
-#DIRCOLORS_ENABLED=true
+#DIRCOLORS_ENABLED=false
+#DIRCOLORS_GENERATE_DB=false
 #LOG_MESSAGING_ENABLED=true
 
 if [ -r "$HOME/.local/bin/bbeditor" ]; then
