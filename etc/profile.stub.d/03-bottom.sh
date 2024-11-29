@@ -10,6 +10,20 @@ if test -x "${HOMEBREW_BREW_PATH}"; then
 
   export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
   test -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" && . "$(brew --prefix)/etc/profile.d/bash_completion.sh"
+  if is "${MACOS_COREUTILS_ENABLED:-false}" && test -r "$(brew --prefix)/opt/coreutils/libexec/gnubin"; then
+    log_note "Enabling GNU Core Utils from Homebrew, updating PATH (not recommended)"
+    export PATH="$(brew --prefix)/opt/coreutils/libexec/gnubin:$PATH"
+  fi
+fi
+
+if is "${DIRCOLORS_ENABLED:-true}" && command -v dircolors >/dev/null 2>&1 ; then
+  if test -r "${HOME}/.dircolors" ; then
+    eval "$(dircolors -b ${HOME}/.dircolors)"
+  elif test -r "/etc/DIR_COLORS" ; then
+    eval "$(dircolors -b /etc/DIR_COLORS)"
+  else
+    eval "$(dircolors -b)"
+  fi
 fi
 
 # Display aliases (only output if interactive mode)

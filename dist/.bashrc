@@ -95,6 +95,10 @@ C_BLUE_BOLD=$'\033[01;34m'; C_PURPLE_BOLD=$'\033[01;35m'; C_CYAN_BOLD=$'\033[01;
 #UMASK_OVERRIDE_DIRS='/Users/Shared'
 #UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
+#MACOS_COREUTILS_ENABLED=false
+#DIRCOLORS_ENABLED=true
+#LOG_MESSAGING_ENABLED=true
+
 if [ -r "$HOME/.local/bin/bbeditor" ]; then
   export VISUAL="$HOME/.local/bin/bbeditor"
 elif command -v code >/dev/null ; then
@@ -226,6 +230,7 @@ versiond() {
 }
 
 # Fancy Logging
+# eg: log_info "A long first line"$'\n'"second line"
 logmsg() {
   local level="$1" msg="$2" label="${3:-""}" color_msg="${4:-false}" \
     label_code="${5:-""}" msg_code="${6:-""}" nc="\033[0m" label_color="" msg_color=""
@@ -241,6 +246,8 @@ logmsg() {
   ! $color_msg || msg_code=$label_code
   label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
   printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
+  [ "${LOG_MESSAGING_ENABLED:-true}" != "true" ] || printf "\033[1;2m%s\033[0m\n" \
+    "To disable all messaging, set \`LOG_MESSAGING_ENABLED=false'"
 }
 log_note() { logmsg note "$@"; }
 log_info() { logmsg info "$@"; }
@@ -554,8 +561,8 @@ __save_prompt_command
 # -- BEGIN -- 'etc/profile.d/05-aliases.sh'
 # ------------------------------------------------------------
 # Standard
-alias ls='ls -G'
-alias ll='ls -lahF'
+alias ls='ls -F --color'
+alias ll='ls -lah'
 alias la='ls -A'
 alias l='ls -CF'
 alias grep='grep --color=auto'
@@ -580,6 +587,20 @@ if test -x "${HOMEBREW_BREW_PATH}"; then
 
   export BASH_COMPLETION_COMPAT_DIR="$(brew --prefix)/etc/bash_completion.d"
   test -r "$(brew --prefix)/etc/profile.d/bash_completion.sh" && . "$(brew --prefix)/etc/profile.d/bash_completion.sh"
+  if is "${MACOS_COREUTILS_ENABLED:-false}" && test -r "$(brew --prefix)/opt/coreutils/libexec/gnubin"; then
+    log_note "Enabling GNU Core Utils from Homebrew, updating PATH (not recommended)"
+    export PATH="$(brew --prefix)/opt/coreutils/libexec/gnubin:$PATH"
+  fi
+fi
+
+if is "${DIRCOLORS_ENABLED:-true}" && command -v dircolors >/dev/null 2>&1 ; then
+  if test -r "${HOME}/.dircolors" ; then
+    eval "$(dircolors -b ${HOME}/.dircolors)"
+  elif test -r "/etc/DIR_COLORS" ; then
+    eval "$(dircolors -b /etc/DIR_COLORS)"
+  else
+    eval "$(dircolors -b)"
+  fi
 fi
 
 # Display aliases (only output if interactive mode)

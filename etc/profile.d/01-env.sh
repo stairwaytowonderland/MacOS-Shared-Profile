@@ -24,6 +24,10 @@
 #UMASK_OVERRIDE_DIRS='/Users/Shared'
 #UMASK_OVERRIDE_EXCLUDE_DIRS='/Users/Shared/Data'
 
+#MACOS_COREUTILS_ENABLED=false
+#DIRCOLORS_ENABLED=true
+#LOG_MESSAGING_ENABLED=true
+
 if [ -r "$HOME/.local/bin/bbeditor" ]; then
   export VISUAL="$HOME/.local/bin/bbeditor"
 elif command -v code >/dev/null ; then
