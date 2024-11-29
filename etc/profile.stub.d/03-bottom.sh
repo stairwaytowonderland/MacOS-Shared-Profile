@@ -19,7 +19,7 @@ fi
 ! is_windows || DIRCOLORS_ENABLED=true
 
 if is "${DIRCOLORS_ENABLED:-false}" && command -v dircolors >/dev/null 2>&1 ; then
-  is "${DIRCOLORS_GENERATE_DB:-false}" || dircolors -p "${HOME}/.dircolors"
+  is "${DIRCOLORS_GENERATE_DB:-false}" || dircolors -p >"${HOME}/.dircolors"
   if test -r "${HOME}/.dircolors" ; then
     eval "$(dircolors -b ${HOME}/.dircolors)"
   elif test -r "/etc/DIR_COLORS" ; then

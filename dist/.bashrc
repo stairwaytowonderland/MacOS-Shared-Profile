@@ -247,8 +247,10 @@ logmsg() {
   ! $color_msg || msg_code=$label_code
   label_color="\033[1;${label_code}m"; msg_color="\033[0;${msg_code}m"
   printf "${label_color}[ %s ]${nc} ${msg_color}%s${nc}\n" "$label" "$msg"
-  [ "${LOG_MESSAGING_ENABLED:-true}" != "true" ] || printf "\033[1;2m%s\033[0m\n" \
-    "To disable all messaging, set \`LOG_MESSAGING_ENABLED=false'"
+  if [ ! -x "$0" ]; then
+    [ "${LOG_MESSAGING_ENABLED:-true}" != "true" ] || printf "\033[1;2m%s\033[0m\n" \
+      "To disable all messaging, set \`LOG_MESSAGING_ENABLED=false'"
+  fi
 }
 log_note() { logmsg note "$@"; }
 log_info() { logmsg info "$@"; }
@@ -597,7 +599,7 @@ fi
 ! is_windows || DIRCOLORS_ENABLED=true
 
 if is "${DIRCOLORS_ENABLED:-false}" && command -v dircolors >/dev/null 2>&1 ; then
-  is "${DIRCOLORS_GENERATE_DB:-false}" || dircolors -p "${HOME}/.dircolors"
+  is "${DIRCOLORS_GENERATE_DB:-false}" || dircolors -p >"${HOME}/.dircolors"
   if test -r "${HOME}/.dircolors" ; then
     eval "$(dircolors -b ${HOME}/.dircolors)"
   elif test -r "/etc/DIR_COLORS" ; then
