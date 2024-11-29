@@ -5,11 +5,11 @@ set -eu
 if test -x "$(command -v bbedit)" ; then
   # check stdin
   if test -t 0 ; then
+    echo foo
     set -x
-    bbedit -t "Temporary Document -- Please Save" --language "Unix Shell Script" --new-window --clean <<EOF
-$@
-EOF
+    bbedit -t "Temporary Document -- Please Save" --language "Unix Shell Script" --new-window --clean <<<"$@"
   else
+    echo bar
     set -x
     bbedit -t "Temporary Document -- Please Save" --language "Unix Shell Script" --new-window --clean
   fi
