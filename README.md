@@ -1,4 +1,4 @@
-# MacOS-Shared-Profile
+# shared-profile
 
 ## Clone into existing folder (e.g. `/Users/Shared`)
 
