@@ -32,5 +32,5 @@ fi
 # Display aliases (only output if interactive mode)
 output "$(alias)"
 
-! test -r "$(dirname $XDG_DATA_HOME)/bin" || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
 ! test -r "$HOME/bin" || export PATH="$HOME/bin:$PATH"
+! test -r "$(dirname $XDG_DATA_HOME)/bin" || export PATH="$(dirname $XDG_DATA_HOME)/bin:$PATH"
