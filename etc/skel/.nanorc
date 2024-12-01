@@ -38,7 +38,7 @@ bind ^V paste all
 # bind ^Q exit all
 bind ^S savefile main
 # bind ^W writeout main
-# bind ^O insert main
+bind ^N insert main
 bind ^H help all
 bind ^H exit help
 bind ^F whereis all
