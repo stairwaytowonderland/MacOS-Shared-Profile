@@ -1,25 +1,35 @@
+# For full nanorc reference, see https://www.nano-editor.org/dist/latest/nanorc.5.html
+# (pdf also available: https://www.nano-editor.org/dist/latest/nano.pdf)
+
+# Optionally install nanorc
 # brew install nano nanorc
-# echo 'include "'"$(brew --prefix)"'/share/nanorc/*.nanorc"' >> ~/.nanorc
-# echo 'include "'"$(brew --prefix)"'/share/nano/*.nanorc"' >> ~/.nanorc
-#include "/opt/homebrew/share/nanorc/*.nanorc"
-include "/opt/homebrew/share/nano/*.nanorc"
+# echo 'include "'"$(brew --prefix)"'/share/nano*/*.nanorc"' >> ~/.nanorc
 
-set atblanks
-set autoindent
-set casesensitive
-set constantshow
-set cutfromcursor
-set indicator
-set linenumbers
-# set minibar
-set mouse
-set positionlog
-set smarthome
-set softwrap
-set tabsize 4
-set tabstospaces
-set zap
+# Inlude all .nanorc files
+include "/opt/homebrew/share/nano*/*.nanorc"
 
+# Options
+set tabsize 4       # set tab size to number of columns
+set tabstospaces    # converty typed tab to spaces
+set linenumbers     # display line numbers in left gutter
+set autoindent      # use auto-indentation
+set casesensitive   # search is case-sensitive be default
+set constantshow    # always display the cursor position in status bar
+set cutfromcursor   # cut only from the cursor instead of the whole line
+set indicator       # side bar for indicating cur position
+set smarthome       # `Home` jumps to line start first
+set afterends       # `Ctrl+Right` move to word ends instead of word starts
+set wordchars "_"   # recognize '_' as part of a word
+set zap             # delete selected text as a whole
+set softwrap        # soft wrap
+set atblanks        # soft wrap at blank chars
+set positionlog     # remember cursor position in file
+set historylog      # remember search history
+set mouse           # enable mouse support
+#set locking         # vim-like file locks
+#set nohelp          # disable help when you are familiar enough
+
+# Theme
 set titlecolor bold,white,magenta
 set promptcolor black,yellow
 set statuscolor bold,white,magenta
@@ -32,12 +42,13 @@ set numbercolor magenta
 set keycolor lightmagenta
 set functioncolor magenta
 
+# Keybindings (custom modern); For full modern key bindings, invoke nano with the '--modernbindings' option
+# bind ^Q exit all
+# bind ^W writeout main
 # bind ^X cut main
 bind ^C copy main
 bind ^V paste all
-# bind ^Q exit all
 bind ^S savefile main
-# bind ^W writeout main
 bind ^N insert main
 bind ^H help all
 bind ^H exit help
@@ -48,8 +59,8 @@ bind ^D findprevious all
 bind ^R replace main
 bind ^Z undo main
 bind ^Y redo main
-
 bind ^T gotoline main
 
+# Preserve tabs for the following languages
 extendsyntax python tabgives "    "
 extendsyntax makefile tabgives "	"
