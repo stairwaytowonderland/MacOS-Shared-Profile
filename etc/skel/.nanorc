@@ -10,7 +10,7 @@ include "/opt/homebrew/share/nano*/*.nanorc"
 
 # Options
 set tabsize 4       # set tab size to number of columns
-set tabstospaces    # converty typed tab to spaces
+set tabstospaces    # convert typed tab to spaces
 set linenumbers     # display line numbers in left gutter
 set autoindent      # use auto-indentation
 set casesensitive   # search is case-sensitive be default
