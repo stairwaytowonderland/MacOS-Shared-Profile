@@ -378,19 +378,19 @@ fi
 load_env() { [ ! -r "$HOME/.env" ] || . "$HOME/.env"; }
 
 # get current git branch
-parse_git_branch() {
-  is "${FANCY_PROMPT:-false}" && git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/' || true
-}
-export -f parse_git_branch
+if ! command -v __git_ps1 >/dev/null ; then
+  __git_ps1() {
+    is "${FANCY_PROMPT:-false}" && git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/' || true
+  }
+fi
 
 # custom hostname parsing
-parse_hostname() {
+__ps1_hostname() {
   local arg=${1:-1} replace=${2:-.}
   local count=$(hostname | grep -o '\.' | wc -l | xargs echo)
   [ $count -gt 1 ] || arg=1
   hostname | sed -E 's/\.lan|\.local$//' | cut -d. -f1-$arg | sed "s/\./$replace/g"
 }
-export -f parse_hostname
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
@@ -496,15 +496,15 @@ if is_linux ; then
     PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
   fi
 else
-  # Use 'parse_hostname' instead of '\h' for advanced customization
+  # Use '__ps1_hostname' instead of '\h' for advanced customization
   if [ "$color_prompt" = "yes" ]; then
-    PS1='$(__ps1_color $C_BLUE_BOLD)\u$(__ps1_color)@$(__ps1_color $C_GREEN_BOLD)$(parse_hostname 100 '-')$(__ps1_color):$(__ps1_color $C_BLUE_BOLD)\w$(__ps1_color $C_GREEN)$(parse_git_branch)$(__ps1_color)\$ '
+    PS1='$(__ps1_color $C_BLUE_BOLD)\u$(__ps1_color)@$(__ps1_color $C_GREEN_BOLD)$(__ps1_hostname 100 '-')$(__ps1_color):$(__ps1_color $C_BLUE_BOLD)\w$(__ps1_color $C_GREEN)$(__git_ps1)$(__ps1_color)\$ '
   else
-    PS1='\u@$(parse_hostname 100 '-'):\w$(parse_git_branch)\$ '
+    PS1='\u@$(__ps1_hostname 100 '-'):\w$(parse_git_branch)\$ '
   fi
 fi
 
-! is "${FANCY_PROMPT:-false}" || PS1_PREFIX='\[\e]0;$(__title_status $?)$(__prompt_args "$@")\u@$(parse_hostname 100 '-'):\w\a\]'
+! is "${FANCY_PROMPT:-false}" || PS1_PREFIX='\[\e]0;$(__title_status $?)$(__prompt_args "$@")\u@$(__ps1_hostname 100 '-'):\w\a\]'
 PS1=${PS1_PREFIX:-""}'$(__ps1 "$@")'$PS1
 __save_ps1
 ###
@@ -603,6 +603,13 @@ if test -x "${HOMEBREW_BREW_PATH}"; then
     log_note "Enabling GNU Core Utils from Homebrew, updating PATH (not recommended)"
     export PATH="$(brew --prefix)/opt/coreutils/libexec/gnubin:$PATH"
   fi
+else
+  [ -f ~/.git-completion.bash ] || \
+    curl -k -s "https://raw.githubusercontent.com/git/git/v$(echo $(git --version | egrep -o '[0-9]\.[0-9][0-9]?\.[0-9]'))/contrib/completion/git-completion.bash" -o ~/.git-completion.bash
+  [ ! -f ~/.git-completion.bash ] || . ~/.git-completion.bash
+  [ -f ~/.git-prompt.sh ] || \
+    curl -k -s "https://raw.githubusercontent.com/git/git/v$(echo $(git --version | egrep -o '[0-9]\.[0-9][0-9]?\.[0-9]'))/contrib/completion/git-prompt.sh" -o ~/.git-prompt.sh
+  [ ! -f ~/.git-prompt.sh ] || . ~/.git-prompt.sh
 fi
 
 ! is_windows || DIRCOLORS_ENABLED=true
