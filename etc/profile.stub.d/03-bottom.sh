@@ -15,12 +15,12 @@ if test -x "${HOMEBREW_BREW_PATH}"; then
     export PATH="$(brew --prefix)/opt/coreutils/libexec/gnubin:$PATH"
   fi
 else
-  [ -f ~/.git-completion.bash ] || \
+  test -f ~/.git-completion.bash || \
     curl -k -s "https://raw.githubusercontent.com/git/git/v$(echo $(git --version | egrep -o '[0-9]\.[0-9][0-9]?\.[0-9]'))/contrib/completion/git-completion.bash" -o ~/.git-completion.bash
-  [ ! -f ~/.git-completion.bash ] || . ~/.git-completion.bash
-  [ -f ~/.git-prompt.sh ] || \
+  ! test -f ~/.git-completion.bash || . ~/.git-completion.bash
+  command -v __git_ps1 >/dev/null || \
     curl -k -s "https://raw.githubusercontent.com/git/git/v$(echo $(git --version | egrep -o '[0-9]\.[0-9][0-9]?\.[0-9]'))/contrib/completion/git-prompt.sh" -o ~/.git-prompt.sh
-  [ ! -f ~/.git-prompt.sh ] || . ~/.git-prompt.sh
+  ! test -f ~/.git-prompt.sh || . ~/.git-prompt.sh
 fi
 
 ! is_windows || DIRCOLORS_ENABLED=true
