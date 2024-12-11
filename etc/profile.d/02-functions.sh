@@ -6,6 +6,7 @@ is_interactive_mode() {
 
 # Basic Output
 errcho() { >&2 echo -e "$@"; }
+debug() { ! test "$DEBUG" = "true" || errcho "$@"; }
 output() { ! is_interactive_mode || errcho "\033[0;2m$@\033[0m"; }
 flusherr() { output $?; }
 
@@ -37,27 +38,25 @@ is() { is_true $1 2>/dev/null || return $?; }
 # Usage:
 # testd <value1> <value2> <operator> [true|false]
 # Example:
-# testd 1.0 1.1 eq
-# testd 1.0 1.1 eq false
+# testd 1.0 eq 1.1
+# testd 1.0 eq 1.1 eq false
 testd() {
-  local value1="${1-}"; shift
-  local operator="${1-}"; shift
-  local value2="${1-}"; shift
-  local result=0 err=0
+  local value1="${1-}" operator="${2-}" value2="${3-}"
+  local err=0 shopt_err="$(echo $- | egrep -o -q '[e]' && echo true || echo false)"
   case $operator in
-    eq) result=$(echo "${value1}==${value2}" | bc); err=$?;;
-    ne) result=$(echo "${value1}!=${value2}" | bc); err=$?;;
-    gt) result=$(echo "${value1}>${value2}" | bc); err=$?;;
-    ge) result=$(echo "${value1}>=${value2}" | bc); err=$?;;
-    lt) result=$(echo "${value1}<${value2}" | bc); err=$?;;
-    le) result=$(echo "${value1}<=${value2}" | bc); err=$?;;
-    *) result=$(echo "${value1}=${value2}" | bc); err=$?;;
+    'eq'|'==') set +e; awk -v a="$value1" -v b="$value2" ' BEGIN { if ( a == b ) exit 0; else exit 1 } '; err=$? ;;
+    'ne'|'!=') set +e; awk -v a="$value1" -v b="$value2" ' BEGIN { if ( a != b ) exit 0; else exit 1 } '; err=$? ;;
+    'gt'|'>') set +e; awk -v a="$value1" -v b="$value2" ' BEGIN { if ( a > b ) exit 0; else exit 1 } '; err=$? ;;
+    'ge'|'>=') set +e; awk -v a="$value1" -v b="$value2" ' BEGIN { if ( a >= b ) exit 0; else exit 1 } '; err=$? ;;
+    'lt'|'<') set +e; awk -v a="$value1" -v b="$value2" ' BEGIN { if ( a < b ) exit 0; else exit 1 } '; err=$? ;;
+    'le'|'<=') set +e; awk -v a="$value1" -v b="$value2" ' BEGIN { if ( a <= b ) exit 0; else exit 1 } '; err=$? ;;
+    *) err=2 ;;
   esac
-  [ $err -eq 0 ] || return $err
-  case $result in
-    1) errcho true; [ "true" != "${1:-false}" ] || return 0;;
-    0) errcho false; [ "true" != "${1:-false}" ] || return 1;;
-    *) errcho "Bad number"; return 3;;
+  echo $- | egrep -v -q '[e]' || set -e
+  case $err in
+    0) errcho true; [ "true" != "${4:-false}" ] || return 0;;
+    1) errcho false; [ "true" != "${4:-false}" ] || return 1;;
+    *) errcho "Bad number"; return $err ;;
   esac
 }
 
